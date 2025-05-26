@@ -170,7 +170,7 @@ const ExtraHoursPanel = () => {
     return errors;
   };
 
-  // Enviar formulario
+  // Enviar formulario (FUNCIÓN MODIFICADA)
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -192,20 +192,36 @@ const ExtraHoursPanel = () => {
         updatedAt: new Date().toISOString(),
       };
 
+      // 1. Buscar el tipo de hora extra seleccionado
+      const selectedType = extraHourTypes.find(t => t.id.toString() === formData.extraHourTypeId.toString());
+      
+      if (!selectedType) {
+        throw new Error("No se encontró el tipo de hora extra seleccionado");
+      }
+
       let response;
       if (isEditing) {
-        // Actualizar registro existente
+        // 2. Actualizar registro existente
         response = await api.put(`/api/extra-hours/${editingId}`, dataToSend);
         setRegistros(registros.map(reg => 
-          reg.id === editingId ? response.data : reg
+          reg.id === editingId ? {
+            ...response.data,
+            user: selectedEmployee,
+            extraHourType: selectedType // Incluir el objeto completo del tipo
+          } : reg
         ));
         setIsEditing(false);
         setEditingId(null);
       } else {
-        // Crear nuevo registro
+        // 3. Crear nuevo registro
         dataToSend.createdAt = new Date().toISOString();
         response = await api.post('/api/extra-hours', dataToSend);
-        setRegistros([...registros, response.data]);
+        
+        setRegistros([...registros, {
+          ...response.data,
+          user: selectedEmployee,
+          extraHourType: selectedType // Incluir el objeto completo del tipo
+        }]);
       }
       
       // Resetear formulario
