@@ -2,105 +2,155 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Users, UserPlus, UserCheck, UserX, User } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { FaSearch, FaTimes } from "react-icons/fa";
+import api from '../api/axiosInstance';
 
 const AdminPanel = ({ onClose }) => {
   const { theme, isDark } = useTheme();
-
-  // Datos de ejemplo - reemplazar con datos reales
-  const [registros, setRegistros] = useState([
-    {
-      id: 1,
-      nombre: "Juan Pérez",
-      fecha: "2023-05-15",
-      actividad: "Proyecto X",
-      horas: "3",
-      tipoHoraExtra: "Diurna",
-      estado: "Pendiente"
-    },
-    {
-      id: 2,
-      nombre: "María García",
-      fecha: "2023-05-16",
-      actividad: "Informe mensual",
-      horas: "2",
-      tipoHoraExtra: "Nocturna",
-      estado: "Pendiente"
-    },
-    {
-      id: 3,
-      nombre: "Mark",
-      fecha: "2023-05-16",
-      actividad: "Informe mensual",
-      horas: "2",
-      tipoHoraExtra: "Nocturna",
-      estado: "Pendiente"
-    }
-  ]);
-
-  const [empleados, setEmpleados] = useState([
-    { id: 1, nombre: "Juan Pérez", email: "juan@empresa.com", rol: "empleado" },
-    { id: 2, nombre: "María García", email: "maria@empresa.com", rol: "supervisor" },
-    { id: 2, nombre: "Mark", email: "mark@empleado.com", rol: "empleado" }
-  ]);
-
+  const [registros, setRegistros] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredRegistros, setFilteredRegistros] = useState([]);
   const [nuevoEmpleado, setNuevoEmpleado] = useState({
     nombre: "",
     email: "",
-    rol: "empleado"
+    rol: "empleado",
+    password: ""
   });
 
-  // Estadísticas
   const [stats, setStats] = useState({
-    totalHoras: registros.reduce((sum, reg) => sum + parseInt(reg.horas), 0),
-    horasAprobadas: registros.filter(r => r.estado === "Aprobado").length,
-    horasPendientes: registros.filter(r => r.estado === "Pendiente").length,
-    totalEmpleados: empleados.length
+    totalHoras: 0,
+    horasAprobadas: 0,
+    horasPendientes: 0,
+    totalEmpleados: 0
   });
 
-  // Filtrado de registros
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const horasResponse = await api.get('/api/extra-hours?status=Pendiente');
+        setRegistros(horasResponse.data);
+        
+        const empleadosResponse = await api.get('/api/users');
+        setEmpleados(empleadosResponse.data);
+        
+        calculateStats(horasResponse.data, empleadosResponse.data);
+      } catch (error) {
+        console.error("Error loading data:", error);
+        alert("Error al cargar datos iniciales");
+      }
+    };
+    
+    loadInitialData();
+  }, []);
+
+  const calculateStats = (horasData, empleadosData) => {
+    const horasActuales = horasData.filter(reg => reg !== null && reg !== undefined);
+    const totalHoras = horasActuales.reduce((sum, reg) => {
+      return sum + calculateRoundedHours(reg.startTime, reg.endTime);
+    }, 0);
+    const horasAprobadas = horasActuales.filter(r => r.status === "Aprobado").length;
+    const horasPendientes = horasActuales.filter(r => r.status === "Pendiente").length;
+
+    setStats({
+      totalHoras,
+      horasAprobadas,
+      horasPendientes,
+      totalEmpleados: empleadosData.length
+    });
+  };
+
+  const calculateRoundedHours = (startTime, endTime) => {
+    if (!startTime || !endTime) return 0;
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    const diff = (end - start) / (1000 * 60 * 60);
+    return Math.round(diff > 0 ? diff : 0);
+  };
+
   useEffect(() => {
     const filtered = registros.filter(registro =>
-      registro.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registro.fecha.includes(searchTerm) ||
-      registro.actividad.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registro.tipoHoraExtra.toLowerCase().includes(searchTerm.toLowerCase())
+      registro.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registro.date?.includes(searchTerm) ||
+      registro.reason?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registro.extraHourType?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredRegistros(filtered);
   }, [searchTerm, registros]);
 
-  // Manejar aprobación/denegación
-  const manejarAprobacion = (id, accion) => {
-    const nuevosRegistros = registros.map(registro => {
-      if (registro.id === id) {
-        return { ...registro, estado: accion === 'aprobar' ? 'Aprobado' : 'Denegado' };
+  const manejarAprobacion = async (id, accion) => {
+    try {
+      let response;
+      
+      if (accion === 'aprobar') {
+        response = await api.put(`/api/extra-hours/${id}/approve`, {
+          approvedById: 1 // ID del admin que aprueba
+        });
+      } else {
+        response = await api.put(`/api/extra-hours/${id}/reject`, {
+          approvedById: 1 // ID del admin que rechaza
+        });
       }
-      return registro;
-    });
 
-    setRegistros(nuevosRegistros);
-    setStats({
-      ...stats,
-      horasAprobadas: nuevosRegistros.filter(r => r.estado === "Aprobado").length,
-      horasPendientes: nuevosRegistros.filter(r => r.estado === "Pendiente").length
-    });
-  };
+      const nuevosRegistros = registros.map(registro => {
+        if (registro.id === id) {
+          return { 
+            ...registro, 
+            status: accion === 'aprobar' ? 'Aprobado' : 'Denegado',
+            approvedById: 1
+          };
+        }
+        return registro;
+      });
 
-  // Crear nuevo empleado
-  const crearEmpleado = () => {
-    if (nuevoEmpleado.nombre && nuevoEmpleado.email) {
-      const nuevo = { ...nuevoEmpleado, id: Date.now() };
-      setEmpleados([...empleados, nuevo]);
-      setNuevoEmpleado({ nombre: "", email: "", rol: "empleado" });
-      setStats({ ...stats, totalEmpleados: empleados.length + 1 });
+      setRegistros(nuevosRegistros);
+      calculateStats(nuevosRegistros, empleados);
+      
+      alert(`Horas extra ${accion === 'aprobar' ? 'aprobadas' : 'denegadas'} correctamente`);
+    } catch (error) {
+      console.error("Error al actualizar estado:", error);
+      if (error.response) {
+        console.error("Detalles del error:", error.response.data);
+      }
+      alert(`Error al ${accion === 'aprobar' ? 'aprobar' : 'denegar'} las horas extras`);
     }
   };
 
-  // Eliminar empleado
-  const eliminarEmpleado = (id) => {
-    setEmpleados(empleados.filter(emp => emp.id !== id));
-    setStats({ ...stats, totalEmpleados: empleados.length - 1 });
+  const crearEmpleado = async () => {
+    if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
+      alert("Por favor complete todos los campos");
+      return;
+    }
+
+    try {
+      const response = await api.post('/api/users', {
+        name: nuevoEmpleado.nombre,
+        email: nuevoEmpleado.email,
+        password: nuevoEmpleado.password,
+        roleId: nuevoEmpleado.rol === "supervisor" ? 2 : 1
+      });
+
+      setEmpleados([...empleados, response.data]);
+      setNuevoEmpleado({ nombre: "", email: "", rol: "empleado", password: "" });
+      setStats({ ...stats, totalEmpleados: empleados.length + 1 });
+    } catch (error) {
+      console.error("Error al crear empleado:", error);
+      alert("Error al crear el empleado");
+    }
+  };
+
+  const eliminarEmpleado = async (id) => {
+    if (!window.confirm("¿Está seguro que desea eliminar este empleado?")) {
+      return;
+    }
+
+    try {
+      await api.delete(`/api/users/${id}`);
+      setEmpleados(empleados.filter(emp => emp.id !== id));
+      setStats({ ...stats, totalEmpleados: empleados.length - 1 });
+    } catch (error) {
+      console.error("Error al eliminar empleado:", error);
+      alert("Error al eliminar el empleado");
+    }
   };
 
   const mainBgColor = isDark ? "bg-gray-900" : "bg-gray-100";
@@ -108,14 +158,11 @@ const AdminPanel = ({ onClose }) => {
 
   return (
     <div className="relative">
-
       <div className={`min-h-screen w-full ${mainBgColor} text-${isDark ? "white" : "gray-800"} transition-colors duration-200`}>
         <div className="container mx-auto p-6 space-y-6">
-          {/* Resumen Estadístico */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <h3 className="text-xl font-bold mb-4">Resumen Administrativo</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-              {/* Tarjeta Horas Totales */}
               <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
                 isDark ? "bg-blue-900/30" : "bg-blue-50"
               }`}>
@@ -126,7 +173,6 @@ const AdminPanel = ({ onClose }) => {
                 <p className="text-2xl font-bold text-blue-600">{stats.totalHoras}</p>
               </div>
               
-              {/* Tarjeta Horas Aprobadas */}
               <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
                 isDark ? "bg-green-900/30" : "bg-green-50"
               }`}>
@@ -137,7 +183,6 @@ const AdminPanel = ({ onClose }) => {
                 <p className="text-2xl font-bold text-green-600">{stats.horasAprobadas}</p>
               </div>
               
-              {/* Tarjeta Horas Pendientes */}
               <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
                 isDark ? "bg-yellow-900/30" : "bg-yellow-50"
               }`}>
@@ -148,7 +193,6 @@ const AdminPanel = ({ onClose }) => {
                 <p className="text-2xl font-bold text-yellow-600">{stats.horasPendientes}</p>
               </div>
               
-              {/* Tarjeta Empleados */}
               <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
                 isDark ? "bg-purple-900/30" : "bg-purple-50"
               }`}>
@@ -161,7 +205,6 @@ const AdminPanel = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Buscador de horas extras */}
           <div className="mb-6 flex items-center">
             <div className="relative w-full">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -177,7 +220,6 @@ const AdminPanel = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Tabla de Horas Extras */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Clock className="text-blue-500" /> Horas Extras Pendientes
@@ -204,24 +246,24 @@ const AdminPanel = ({ onClose }) => {
                       <tr key={registro.id} className={`border-t transition-colors duration-200 ${
                         isDark ? "border-gray-700" : "border-gray-200"
                       }`}>
-                        <td className="p-3">{registro.nombre}</td>
-                        <td className="p-3">{registro.fecha}</td>
-                        <td className="p-3">{registro.actividad}</td>
-                        <td className="p-3">{registro.horas}</td>
-                        <td className="p-3">{registro.tipoHoraExtra}</td>
+                        <td className="p-3">{registro.user?.name}</td>
+                        <td className="p-3">{new Date(registro.date).toLocaleDateString()}</td>
+                        <td className="p-3">{registro.reason}</td>
+                        <td className="p-3">{calculateRoundedHours(registro.startTime, registro.endTime)}</td>
+                        <td className="p-3">{registro.extraHourType?.name}</td>
                         <td className="p-3">
                           <span className={`px-2 py-1 rounded text-sm ${
-                            registro.estado === "Pendiente" 
+                            registro.status === "Pendiente" 
                               ? isDark ? "bg-yellow-800/50 text-yellow-200" : "bg-yellow-100 text-yellow-800" 
-                              : registro.estado === "Aprobado"
+                              : registro.status === "Aprobado"
                                 ? isDark ? "bg-green-800/50 text-green-200" : "bg-green-100 text-green-800"
                                 : isDark ? "bg-red-800/50 text-red-200" : "bg-red-100 text-red-800"
                           }`}>
-                            {registro.estado}
+                            {registro.status}
                           </span>
                         </td>
                         <td className="p-3 flex gap-2">
-                          {registro.estado === "Pendiente" && (
+                          {registro.status === "Pendiente" && (
                             <>
                               <button 
                                 onClick={() => manejarAprobacion(registro.id, 'aprobar')}
@@ -256,14 +298,12 @@ const AdminPanel = ({ onClose }) => {
             )}
           </div>
 
-          {/* Gestión de Empleados */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Users className="text-purple-500" /> Gestión de Empleados
             </h2>
             
-            {/* Formulario para nuevo empleado */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
               <input
                 type="text"
                 placeholder="Nombre completo"
@@ -282,6 +322,15 @@ const AdminPanel = ({ onClose }) => {
                 value={nuevoEmpleado.email}
                 onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, email: e.target.value})}
               />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                className={`p-2 border rounded transition-colors duration-200 ${
+                  isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
+                }`}
+                value={nuevoEmpleado.password}
+                onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, password: e.target.value})}
+              />
               <select
                 className={`p-2 border rounded transition-colors duration-200 ${
                   isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
@@ -291,7 +340,6 @@ const AdminPanel = ({ onClose }) => {
               >
                 <option value="empleado">Empleado</option>
                 <option value="supervisor">Supervisor</option>
-                <option value="admin">Administrador</option>
               </select>
               <button
                 className={`text-white p-2 rounded transition-colors duration-200 ${
@@ -303,7 +351,6 @@ const AdminPanel = ({ onClose }) => {
               </button>
             </div>
             
-            {/* Lista de empleados */}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -321,9 +368,9 @@ const AdminPanel = ({ onClose }) => {
                     <tr key={empleado.id} className={`border-t transition-colors duration-200 ${
                       isDark ? "border-gray-700" : "border-gray-200"
                     }`}>
-                      <td className="p-3">{empleado.nombre}</td>
+                      <td className="p-3">{empleado.name}</td>
                       <td className="p-3">{empleado.email}</td>
-                      <td className="p-3 capitalize">{empleado.rol}</td>
+                      <td className="p-3 capitalize">{empleado.role?.name || empleado.rol}</td>
                       <td className="p-3">
                         <button 
                           onClick={() => eliminarEmpleado(empleado.id)}
