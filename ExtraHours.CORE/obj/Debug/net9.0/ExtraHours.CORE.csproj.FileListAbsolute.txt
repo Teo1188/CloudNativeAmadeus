@@ -75,3 +75,4 @@ C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-m
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.CORE\obj\Debug\net9.0\refint\ExtraHours.CORE.dll
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.pdb
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.CORE\obj\Debug\net9.0\ref\ExtraHours.CORE.dll
+C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.sourcelink.json

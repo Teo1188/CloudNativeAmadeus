@@ -955,3 +955,4 @@ C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-m
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.API\obj\Debug\net9.0\ExtraHours.API.pdb
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.API\obj\Debug\net9.0\ExtraHours.API.genruntimeconfig.cache
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.API\obj\Debug\net9.0\ref\ExtraHours.API.dll
+C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.API\obj\Debug\net9.0\ExtraHours.API.sourcelink.json

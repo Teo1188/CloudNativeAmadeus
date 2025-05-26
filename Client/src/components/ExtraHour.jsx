@@ -15,6 +15,8 @@ const ExtraHoursPanel = () => {
   const [departamentos, setDepartamentos] = useState([]);
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState("");
   const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   
   const [formData, setFormData] = useState({
     userId: "",
@@ -179,8 +181,6 @@ const ExtraHoursPanel = () => {
     }
     
     try {
-      const selectedType = extraHourTypes.find(t => t.id === formData.extraHourTypeId);
-      
       const dataToSend = {
         userId: selectedEmployee.id,
         date: new Date(formData.date).toISOString(),
@@ -188,13 +188,25 @@ const ExtraHoursPanel = () => {
         endTime: formData.endTime.includes(':') ? formData.endTime : `${formData.endTime}:00`,
         extraHourTypeId: formData.extraHourTypeId,
         reason: formData.reason || null,
-        status: "pendiente",
-        createdAt: new Date().toISOString(),
+        status: formData.status,
         updatedAt: new Date().toISOString(),
       };
 
-      const response = await api.post('/api/extra-hours', dataToSend);
-      setRegistros([...registros, response.data]);
+      let response;
+      if (isEditing) {
+        // Actualizar registro existente
+        response = await api.put(`/api/extra-hours/${editingId}`, dataToSend);
+        setRegistros(registros.map(reg => 
+          reg.id === editingId ? response.data : reg
+        ));
+        setIsEditing(false);
+        setEditingId(null);
+      } else {
+        // Crear nuevo registro
+        dataToSend.createdAt = new Date().toISOString();
+        response = await api.post('/api/extra-hours', dataToSend);
+        setRegistros([...registros, response.data]);
+      }
       
       // Resetear formulario
       setFormData({
@@ -210,17 +222,72 @@ const ExtraHoursPanel = () => {
       setEmployeeSearchTerm("");
       setTotalHours(0);
       
-      alert("Horas extras registradas correctamente!");
+      alert(`Horas extras ${isEditing ? 'actualizadas' : 'registradas'} correctamente!`);
       
     } catch (error) {
       console.error("Error al registrar:", error.response?.data || error.message);
-      let errorMessage = "Error al registrar horas extras";
+      let errorMessage = `Error al ${isEditing ? 'actualizar' : 'registrar'} horas extras`;
       if (error.response?.data) {
         errorMessage = typeof error.response.data === 'object' 
           ? JSON.stringify(error.response.data) 
           : error.response.data;
       }
       alert(errorMessage);
+    }
+  };
+
+  // Manejar edición de registro
+  const handleEdit = (registro) => {
+    setIsEditing(true);
+    setEditingId(registro.id);
+    
+    // Buscar el empleado correspondiente al registro
+    const empleadoRegistro = empleados.find(e => e.id === registro.userId);
+    
+    if (empleadoRegistro) {
+      const selected = {
+        ...empleadoRegistro,
+        role: {
+          name: roles.find(r => r.id === empleadoRegistro.roleId)?.name || "Sin rol"
+        },
+        department: {
+          name: departamentos.find(d => d.id === empleadoRegistro.departmentId)?.name || "Sin departamento"
+        }
+      };
+      
+      setSelectedEmployee(selected);
+      setEmployeeSearchTerm(selected.name);
+    }
+    
+    // Formatear la fecha para el input
+    const fecha = new Date(registro.date);
+    const fechaFormateada = fecha.toISOString().split('T')[0];
+    
+    // Actualizar el formulario con los datos del registro
+    setFormData({
+      userId: registro.userId,
+      date: fechaFormateada,
+      startTime: registro.startTime,
+      endTime: registro.endTime,
+      extraHourTypeId: registro.extraHourTypeId,
+      reason: registro.reason || "",
+      status: registro.status
+    });
+  };
+
+  // Manejar eliminación de registro
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Está seguro que desea eliminar este registro de horas extras?")) {
+      return;
+    }
+    
+    try {
+      await api.delete(`/api/extra-hours/${id}`);
+      setRegistros(registros.filter(reg => reg.id !== id));
+      alert("Registro eliminado correctamente");
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Error al eliminar el registro");
     }
   };
 
@@ -438,15 +505,43 @@ const ExtraHoursPanel = () => {
             </div>
 
             {/* Botón de Envío */}
-            <button
-              type="submit"
-              className={`px-4 py-2 rounded text-white ${
-                isDark ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700"
-              } transition-colors duration-200`}
-              disabled={!selectedEmployee}
-            >
-              Registrar Horas Extras
-            </button>
+            <div className="flex items-center">
+              <button
+                type="submit"
+                className={`px-4 py-2 rounded text-white ${
+                  isDark ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700"
+                } transition-colors duration-200`}
+                disabled={!selectedEmployee}
+              >
+                {isEditing ? 'Actualizar Horas Extras' : 'Registrar Horas Extras'}
+              </button>
+              
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditingId(null);
+                    setFormData({
+                      userId: "",
+                      date: "",
+                      startTime: "",
+                      endTime: "",
+                      extraHourTypeId: "",
+                      reason: "",
+                      status: "Pendiente"
+                    });
+                    setSelectedEmployee(null);
+                    setEmployeeSearchTerm("");
+                  }}
+                  className={`ml-2 px-4 py-2 rounded ${
+                    isDark ? "bg-gray-600 hover:bg-gray-700 text-white" : "bg-gray-200 hover:bg-gray-300"
+                  } transition-colors duration-200`}
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -514,6 +609,7 @@ const ExtraHoursPanel = () => {
                         </td>
                         <td className="p-3">
                           <button 
+                            onClick={() => handleEdit(registro)}
                             className={`px-3 py-1 rounded mr-2 ${
                               isDark ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-800"
                             } transition-colors duration-200`}
@@ -521,6 +617,7 @@ const ExtraHoursPanel = () => {
                             Editar
                           </button>
                           <button 
+                            onClick={() => handleDelete(registro.id)}
                             className={`px-3 py-1 rounded ${
                               isDark ? "bg-red-700 text-white" : "bg-red-100 text-red-800"
                             } transition-colors duration-200`}
