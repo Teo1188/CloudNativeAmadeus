@@ -170,7 +170,7 @@ const ExtraHoursPanel = () => {
     return errors;
   };
 
-  // Enviar formulario (FUNCIÓN MODIFICADA)
+  // Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -192,7 +192,6 @@ const ExtraHoursPanel = () => {
         updatedAt: new Date().toISOString(),
       };
 
-      // 1. Buscar el tipo de hora extra seleccionado
       const selectedType = extraHourTypes.find(t => t.id.toString() === formData.extraHourTypeId.toString());
       
       if (!selectedType) {
@@ -201,30 +200,27 @@ const ExtraHoursPanel = () => {
 
       let response;
       if (isEditing) {
-        // 2. Actualizar registro existente
         response = await api.put(`/api/extra-hours/${editingId}`, dataToSend);
         setRegistros(registros.map(reg => 
           reg.id === editingId ? {
             ...response.data,
             user: selectedEmployee,
-            extraHourType: selectedType // Incluir el objeto completo del tipo
+            extraHourType: selectedType
           } : reg
         ));
         setIsEditing(false);
         setEditingId(null);
       } else {
-        // 3. Crear nuevo registro
         dataToSend.createdAt = new Date().toISOString();
         response = await api.post('/api/extra-hours', dataToSend);
         
         setRegistros([...registros, {
           ...response.data,
           user: selectedEmployee,
-          extraHourType: selectedType // Incluir el objeto completo del tipo
+          extraHourType: selectedType
         }]);
       }
       
-      // Resetear formulario
       setFormData({
         userId: "",
         date: "",
@@ -254,10 +250,14 @@ const ExtraHoursPanel = () => {
 
   // Manejar edición de registro
   const handleEdit = (registro) => {
+    if (registro.status !== "Pendiente") {
+      alert("No se pueden editar horas extras ya aprobadas o denegadas");
+      return;
+    }
+
     setIsEditing(true);
     setEditingId(registro.id);
     
-    // Buscar el empleado correspondiente al registro
     const empleadoRegistro = empleados.find(e => e.id === registro.userId);
     
     if (empleadoRegistro) {
@@ -275,11 +275,9 @@ const ExtraHoursPanel = () => {
       setEmployeeSearchTerm(selected.name);
     }
     
-    // Formatear la fecha para el input
     const fecha = new Date(registro.date);
     const fechaFormateada = fecha.toISOString().split('T')[0];
     
-    // Actualizar el formulario con los datos del registro
     setFormData({
       userId: registro.userId,
       date: fechaFormateada,
@@ -293,6 +291,12 @@ const ExtraHoursPanel = () => {
 
   // Manejar eliminación de registro
   const handleDelete = async (id) => {
+    const registro = registros.find(r => r.id === id);
+    if (registro && registro.status !== "Pendiente") {
+      alert("No se pueden eliminar horas extras ya aprobadas o denegadas");
+      return;
+    }
+
     if (!window.confirm("¿Está seguro que desea eliminar este registro de horas extras?")) {
       return;
     }
@@ -602,6 +606,7 @@ const ExtraHoursPanel = () => {
                   )
                   .map(registro => {
                     const horasTotales = calculateRoundedHours(registro.startTime, registro.endTime);
+                    const isPending = registro.status === "Pendiente";
                     
                     return (
                       <tr key={registro.id} className={`border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}>
@@ -618,7 +623,9 @@ const ExtraHoursPanel = () => {
                           <span className={`px-2 py-1 rounded text-sm ${
                             registro.status === "Pendiente" 
                               ? isDark ? "bg-yellow-800/50 text-yellow-200" : "bg-yellow-100 text-yellow-800" 
-                              : isDark ? "bg-green-800/50 text-green-200" : "bg-green-100 text-green-800"
+                              : registro.status === "Aprobado"
+                                ? isDark ? "bg-green-800/50 text-green-200" : "bg-green-100 text-green-800"
+                                : isDark ? "bg-red-800/50 text-red-200" : "bg-red-100 text-red-800"
                           }`}>
                             {registro.status}
                           </span>
@@ -626,16 +633,30 @@ const ExtraHoursPanel = () => {
                         <td className="p-3">
                           <button 
                             onClick={() => handleEdit(registro)}
+                            disabled={!isPending}
                             className={`px-3 py-1 rounded mr-2 ${
-                              isDark ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-800"
+                              isPending 
+                                ? isDark 
+                                  ? "bg-blue-700 hover:bg-blue-800 text-white" 
+                                  : "bg-blue-600 hover:bg-blue-700 text-white"
+                                : isDark 
+                                  ? "bg-gray-600 text-gray-400 cursor-not-allowed" 
+                                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
                             } transition-colors duration-200`}
                           >
                             Editar
                           </button>
                           <button 
                             onClick={() => handleDelete(registro.id)}
+                            disabled={!isPending}
                             className={`px-3 py-1 rounded ${
-                              isDark ? "bg-red-700 text-white" : "bg-red-100 text-red-800"
+                              isPending 
+                                ? isDark 
+                                  ? "bg-red-700 hover:bg-red-800 text-white" 
+                                  : "bg-red-600 hover:bg-red-700 text-white"
+                                : isDark 
+                                  ? "bg-gray-600 text-gray-400 cursor-not-allowed" 
+                                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
                             } transition-colors duration-200`}
                           >
                             Eliminar

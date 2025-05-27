@@ -89,7 +89,6 @@ const manejarAprobacion = async (extraHourId, accion) => {
       status: nuevoEstado,
       user: registroActual.user,
       extraHourType: registroActual.extraHourType
-      // ⚠️ No incluyas `approvedBy` ni `updatedAt`
     };
 
     const response = await api.put(`/api/extra-hours/${extraHourId}`, requestData, {
@@ -127,40 +126,106 @@ const manejarAprobacion = async (extraHourId, accion) => {
 };
 
   const crearEmpleado = async () => {
-    if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
-      alert("Complete todos los campos");
+  // Validación básica
+  if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
+    alert("Por favor complete todos los campos");
+    return;
+  }
+
+  if (nuevoEmpleado.password.length < 8) {
+    alert("La contraseña debe tener al menos 8 caracteres");
+    return;
+  }
+
+  try {
+    // Datos del usuario - FORZAMOS RoleId = 2 (empleado)
+    const userData = {
+      name: nuevoEmpleado.nombre,
+      email: nuevoEmpleado.email,
+      password: nuevoEmpleado.password,
+      roleId: 2, // Siempre empleado, sin importar lo que seleccione el admin
+      departmentId: 1, // Ajusta según tu lógica
+      salary: 0 // Valor por defecto
+    };
+
+    const registerResponse = await api.post('/api/users/register', userData);
+    
+    if (!registerResponse.data || !registerResponse.data.id) {
+      throw new Error("No se recibieron datos válidos del servidor");
+    }
+
+    // Actualizamos la lista de empleados
+    const newEmployee = {
+      ...registerResponse.data,
+      roleId: 2, // Aseguramos que se muestre como empleado
+      role: { name: 'Empleado' } // Para la visualización
+    };
+
+    setEmpleados([...empleados, newEmployee]);
+    setNuevoEmpleado({ nombre: "", email: "", password: "" });
+    setStats({ ...stats, totalEmpleados: empleados.length + 1 });
+
+    alert("Empleado creado exitosamente con rol de Empleado");
+    
+  } catch (error) {
+    console.error("Error al crear empleado:", error);
+    
+    let errorMessage = "Error al crear el empleado";
+    if (error.response) {
+      if (error.response.status === 400) {
+        errorMessage = "Datos inválidos: " + (error.response.data.message || "verifique la información");
+      } else if (error.response.status === 409) {
+        errorMessage = "El correo electrónico ya está registrado";
+      } else {
+        errorMessage = `Error del servidor (${error.response.status})`;
+      }
+    }
+    
+    alert(errorMessage);
+  }
+};
+
+const eliminarEmpleado = async (id) => {
+  try {
+    // Buscar el usuario a eliminar
+    const usuarioAEliminar = empleados.find(emp => emp.id === id);
+    
+    // Verificar si es el admin principal
+    if (usuarioAEliminar && usuarioAEliminar.email === "admin@admin.com") {
+      alert("No se puede eliminar al usuario administrador principal");
       return;
     }
 
-    try {
-      const response = await api.post('/api/users', {
-        name: nuevoEmpleado.nombre,
-        email: nuevoEmpleado.email,
-        password: nuevoEmpleado.password,
-        roleId: nuevoEmpleado.rol === "supervisor" ? 2 : 1
-      });
-
-      setEmpleados([...empleados, response.data]);
-      setNuevoEmpleado({ nombre: "", email: "", rol: "empleado", password: "" });
-      setStats({ ...stats, totalEmpleados: empleados.length + 1 });
-    } catch (error) {
-      console.error("Error al crear empleado:", error);
-      alert("Error al crear el empleado");
+    // Confirmación del usuario
+    if (!window.confirm(`¿Está seguro que desea eliminar al usuario ${usuarioAEliminar?.name || ''}?`)) {
+      return;
     }
-  };
 
-  const eliminarEmpleado = async (id) => {
-    if (!window.confirm("¿Está seguro de eliminar este empleado?")) return;
+    // Llamar al endpoint de eliminación
+    await api.delete(`/api/users/${id}`);
 
-    try {
-      await api.delete(`/api/users/${id}`);
-      setEmpleados(empleados.filter(emp => emp.id !== id));
-      setStats({ ...stats, totalEmpleados: empleados.length - 1 });
-    } catch (error) {
-      console.error("Error al eliminar empleado:", error);
-      alert("Error al eliminar el empleado");
+    // Actualizar el estado local
+    setEmpleados(empleados.filter(emp => emp.id !== id));
+    setStats({ ...stats, totalEmpleados: empleados.length - 1 });
+    
+    alert("Usuario eliminado correctamente");
+  } catch (error) {
+    console.error("Error al eliminar empleado:", error);
+    
+    let errorMessage = "Error al eliminar el empleado";
+    if (error.response) {
+      if (error.response.status === 404) {
+        errorMessage = "El usuario no fue encontrado";
+      } else if (error.response.status === 403) {
+        errorMessage = "No tiene permisos para realizar esta acción";
+      } else {
+        errorMessage = `Error del servidor (${error.response.status})`;
+      }
     }
-  };
+    
+    alert(errorMessage);
+  }
+};
 
   const mainBgColor = isDark ? "bg-gray-900" : "bg-gray-100";
   const panelBgColor = isDark ? "bg-gray-800/80" : "bg-white";
@@ -189,7 +254,7 @@ const manejarAprobacion = async (extraHourId, accion) => {
                 <UserCheck className="mx-auto mb-3 text-green-500" size={40} />
                 <h4 className={`text-base transition-colors duration-200 ${
                   isDark ? "text-gray-300" : "text-gray-600"
-                }`}>Horas aprobadas</h4>
+                }`}>Solicitudes aprobadas</h4>
                 <p className="text-2xl font-bold text-green-600">{stats.horasAprobadas}</p>
               </div>
               
@@ -315,61 +380,67 @@ const manejarAprobacion = async (extraHourId, accion) => {
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Users className="text-purple-500" /> Gestión de Empleados
             </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"> {/* Cambiado de 5 a 4 columnas */}
               <input
                 type="text"
                 placeholder="Nombre completo"
-                className={`p-2 border rounded transition-colors duration-200 ${
-                  isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
-                }`}
+                className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
+                  }`}
                 value={nuevoEmpleado.nombre}
-                onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, nombre: e.target.value})}
+                onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, nombre: e.target.value })}
+                required
               />
               <input
                 type="email"
                 placeholder="Correo electrónico"
-                className={`p-2 border rounded transition-colors duration-200 ${
-                  isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
-                }`}
+                className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
+                  }`}
                 value={nuevoEmpleado.email}
-                onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, email: e.target.value})}
+                onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, email: e.target.value })}
+                required
               />
               <input
                 type="password"
-                placeholder="Contraseña"
-                className={`p-2 border rounded transition-colors duration-200 ${
-                  isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
-                }`}
+                placeholder="Contraseña (mín. 8 caracteres)"
+                className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
+                  }`}
                 value={nuevoEmpleado.password}
-                onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, password: e.target.value})}
+                onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, password: e.target.value })}
+                minLength="8"
+                required
               />
-              <select
-                className={`p-2 border rounded transition-colors duration-200 ${
-                  isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
-                }`}
-                value={nuevoEmpleado.rol}
-                onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, rol: e.target.value})}
-              >
-                <option value="empleado">Empleado</option>
-                <option value="supervisor">Supervisor</option>
-              </select>
               <button
-                className={`text-white p-2 rounded transition-colors duration-200 ${
-                  isDark ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700"
-                }`}
+                className={`text-white p-2 rounded transition-colors duration-200 ${isDark ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 onClick={crearEmpleado}
+                disabled={!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password}
               >
                 Agregar Empleado
               </button>
             </div>
-            
+
+            {/* Mensaje explicativo */}
+            <div className={`mb-4 p-3 rounded ${isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700"
+              }`}>
+              <p className="text-sm">
+                <strong>Nota:</strong> Todos los usuarios creados tendrán rol de <strong>Empleado</strong>
+                y no podrán acceder a funciones administrativas.
+              </p>
+            </div>
+
+            {/* Mensaje de validación de contraseña */}
+            {nuevoEmpleado.password && nuevoEmpleado.password.length < 8 && (
+              <p className={`text-sm mb-4 ${isDark ? "text-red-400" : "text-red-600"}`}>
+                La contraseña debe tener al menos 8 caracteres
+              </p>
+            )}
+
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className={`text-left transition-colors duration-200 ${
-                    isDark ? "bg-gray-700" : "bg-gray-100"
-                  }`}>
+                  <tr className={`text-left transition-colors duration-200 ${isDark ? "bg-gray-700" : "bg-gray-100"
+                    }`}>
                     <th className="p-3">Nombre</th>
                     <th className="p-3">Email</th>
                     <th className="p-3">Rol</th>
@@ -378,20 +449,24 @@ const manejarAprobacion = async (extraHourId, accion) => {
                 </thead>
                 <tbody>
                   {empleados.map((empleado) => (
-                    <tr key={empleado.id} className={`border-t transition-colors duration-200 ${
-                      isDark ? "border-gray-700" : "border-gray-200"
-                    }`}>
+                    <tr key={empleado.id} className={`border-t transition-colors duration-200 ${isDark ? "border-gray-700" : "border-gray-200"
+                      }`}>
                       <td className="p-3">{empleado.name}</td>
                       <td className="p-3">{empleado.email}</td>
-                      <td className="p-3 capitalize">{empleado.role?.name || empleado.rol}</td>
+                      <td className="p-3 capitalize">
+                        {empleado.roleId === 1 ? 'Administrador' : 'Empleado'}
+                      </td>
                       <td className="p-3">
-                        <button 
+                        <button
                           onClick={() => eliminarEmpleado(empleado.id)}
-                          className={`px-3 py-1 rounded text-sm ${
-                            isDark ? "bg-red-700 hover:bg-red-800" : "bg-red-600 hover:bg-red-700"
-                          } text-white flex items-center gap-1`}
+                          className={`px-3 py-1 rounded text-sm ${isDark ? "bg-red-700 hover:bg-red-800" : "bg-red-600 hover:bg-red-700"
+                            } text-white flex items-center gap-1`}
+                          disabled={empleado.email === "admin@admin.com"}
                         >
                           <UserX size={16} /> Eliminar
+                          {empleado.email === "admin@admin.com" && (
+                            <span className="sr-only">(No se puede eliminar al administrador principal)</span>
+                          )}
                         </button>
                       </td>
                     </tr>
