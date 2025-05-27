@@ -43,11 +43,17 @@ namespace ExtraHours.Infrastructure.Services
             var existing = await _extraHourRepository.GetByIdAsync(id);
             if (existing == null) return null!;
 
+            // Actualizar campos permitidos
             existing.Date = updatedExtraHour.Date;
             existing.StartTime = updatedExtraHour.StartTime;
             existing.EndTime = updatedExtraHour.EndTime;
             existing.ExtraHourTypeId = updatedExtraHour.ExtraHourTypeId;
             existing.Reason = updatedExtraHour.Reason;
+
+            // 🔧 Campos críticos que debes actualizar
+            existing.Status = updatedExtraHour.Status;
+            existing.ApprovedById = updatedExtraHour.ApprovedById;
+            existing.UpdatedAt = DateTime.UtcNow;
 
             await _extraHourRepository.UpdateAsync(existing);
             return existing;

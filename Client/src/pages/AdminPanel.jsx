@@ -29,17 +29,14 @@ const AdminPanel = ({ onClose }) => {
       try {
         const horasResponse = await api.get('/api/extra-hours?status=Pendiente');
         setRegistros(horasResponse.data);
-        
         const empleadosResponse = await api.get('/api/users');
         setEmpleados(empleadosResponse.data);
-        
         calculateStats(horasResponse.data, empleadosResponse.data);
       } catch (error) {
         console.error("Error loading data:", error);
         alert("Error al cargar datos iniciales");
       }
     };
-    
     loadInitialData();
   }, []);
 
@@ -77,47 +74,61 @@ const AdminPanel = ({ onClose }) => {
     setFilteredRegistros(filtered);
   }, [searchTerm, registros]);
 
-  const manejarAprobacion = async (id, accion) => {
-    try {
-      let response;
-      
-      if (accion === 'aprobar') {
-        response = await api.put(`/api/extra-hours/${id}/approve`, {
-          approvedById: 1 // ID del admin que aprueba
-        });
-      } else {
-        response = await api.put(`/api/extra-hours/${id}/reject`, {
-          approvedById: 1 // ID del admin que rechaza
-        });
-      }
+const manejarAprobacion = async (extraHourId, accion) => {
+  try {
+    if (!extraHourId) throw new Error("ID de horas extra no proporcionado");
 
-      const nuevosRegistros = registros.map(registro => {
-        if (registro.id === id) {
-          return { 
-            ...registro, 
-            status: accion === 'aprobar' ? 'Aprobado' : 'Denegado',
-            approvedById: 1
-          };
-        }
-        return registro;
-      });
+    const registroActual = registros.find(r => r.id === extraHourId);
+    if (!registroActual) throw new Error("Registro no encontrado");
 
-      setRegistros(nuevosRegistros);
-      calculateStats(nuevosRegistros, empleados);
-      
-      alert(`Horas extra ${accion === 'aprobar' ? 'aprobadas' : 'denegadas'} correctamente`);
-    } catch (error) {
-      console.error("Error al actualizar estado:", error);
-      if (error.response) {
-        console.error("Detalles del error:", error.response.data);
+    const nuevoEstado = accion === 'aprobar' ? 'Aprobado' : 'Rechazado';
+
+    const requestData = {
+      ...registroActual,
+      approvedById: 1,
+      status: nuevoEstado,
+      user: registroActual.user,
+      extraHourType: registroActual.extraHourType
+      // ⚠️ No incluyas `approvedBy` ni `updatedAt`
+    };
+
+    const response = await api.put(`/api/extra-hours/${extraHourId}`, requestData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
-      alert(`Error al ${accion === 'aprobar' ? 'aprobar' : 'denegar'} las horas extras`);
+    });
+
+    if (!response.data) throw new Error("Error: respuesta vacía del servidor");
+
+    // Actualizar estado local
+    const nuevosRegistros = registros.map(reg =>
+      reg.id === extraHourId ? { ...reg, status: nuevoEstado } : reg
+    );
+    setRegistros(nuevosRegistros);
+    calculateStats(nuevosRegistros, empleados);
+
+    alert(`Horas extras ${accion === 'aprobar' ? 'aprobadas' : 'rechazadas'} correctamente`);
+  } catch (error) {
+    console.error('Error detallado:', error);
+
+    let errorMessage = `Error al ${accion === 'aprobar' ? 'aprobar' : 'rechazar'} las horas extras`;
+
+    if (error.response?.data?.includes('FK_ExtraHours_ExtraHourTypes_ExtraHourTypeId')) {
+      errorMessage = "Error: Problema con el tipo de hora extra. Contacte al administrador.";
+    } else if (error.response?.status === 500) {
+      errorMessage = "Error interno del servidor. Intente nuevamente o contacte al administrador.";
+    } else if (error.message) {
+      errorMessage += `: ${error.message}`;
     }
-  };
+
+    alert(errorMessage);
+  }
+};
 
   const crearEmpleado = async () => {
     if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
-      alert("Por favor complete todos los campos");
+      alert("Complete todos los campos");
       return;
     }
 
@@ -139,9 +150,7 @@ const AdminPanel = ({ onClose }) => {
   };
 
   const eliminarEmpleado = async (id) => {
-    if (!window.confirm("¿Está seguro que desea eliminar este empleado?")) {
-      return;
-    }
+    if (!window.confirm("¿Está seguro de eliminar este empleado?")) return;
 
     try {
       await api.delete(`/api/users/${id}`);
@@ -160,6 +169,7 @@ const AdminPanel = ({ onClose }) => {
     <div className="relative">
       <div className={`min-h-screen w-full ${mainBgColor} text-${isDark ? "white" : "gray-800"} transition-colors duration-200`}>
         <div className="container mx-auto p-6 space-y-6">
+          {/* Resumen Administrativo */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <h3 className="text-xl font-bold mb-4">Resumen Administrativo</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
@@ -189,7 +199,7 @@ const AdminPanel = ({ onClose }) => {
                 <Clock className="mx-auto mb-3 text-yellow-500" size={40} />
                 <h4 className={`text-base transition-colors duration-200 ${
                   isDark ? "text-gray-300" : "text-gray-600"
-                }`}>Horas pendientes</h4>
+                }`}>Solicitudes pendientes</h4>
                 <p className="text-2xl font-bold text-yellow-600">{stats.horasPendientes}</p>
               </div>
               
@@ -205,6 +215,7 @@ const AdminPanel = ({ onClose }) => {
             </div>
           </div>
 
+          {/* Buscador */}
           <div className="mb-6 flex items-center">
             <div className="relative w-full">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -220,6 +231,7 @@ const AdminPanel = ({ onClose }) => {
             </div>
           </div>
 
+          {/* Horas Extras Pendientes */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Clock className="text-blue-500" /> Horas Extras Pendientes
@@ -298,6 +310,7 @@ const AdminPanel = ({ onClose }) => {
             )}
           </div>
 
+          {/* Gestión de Empleados */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Users className="text-purple-500" /> Gestión de Empleados
