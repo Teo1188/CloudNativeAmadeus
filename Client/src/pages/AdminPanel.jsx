@@ -100,7 +100,7 @@ const manejarAprobacion = async (extraHourId, accion) => {
 
     if (!response.data) throw new Error("Error: respuesta vacía del servidor");
 
-    // Actualizar estado local
+
     const nuevosRegistros = registros.map(reg =>
       reg.id === extraHourId ? { ...reg, status: nuevoEstado } : reg
     );
@@ -126,7 +126,7 @@ const manejarAprobacion = async (extraHourId, accion) => {
 };
 
   const crearEmpleado = async () => {
-  // Validación básica
+  
   if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
     alert("Por favor complete todos los campos");
     return;
@@ -138,14 +138,14 @@ const manejarAprobacion = async (extraHourId, accion) => {
   }
 
   try {
-    // Datos del usuario - FORZAMOS RoleId = 2 (empleado)
+   
     const userData = {
       name: nuevoEmpleado.nombre,
       email: nuevoEmpleado.email,
       password: nuevoEmpleado.password,
-      roleId: 2, // Siempre empleado, sin importar lo que seleccione el admin
-      departmentId: 1, // Ajusta según tu lógica
-      salary: 0 // Valor por defecto
+      roleId: 2, 
+      departmentId: 1, 
+      salary: 0 
     };
 
     const registerResponse = await api.post('/api/users/register', userData);
@@ -154,11 +154,11 @@ const manejarAprobacion = async (extraHourId, accion) => {
       throw new Error("No se recibieron datos válidos del servidor");
     }
 
-    // Actualizamos la lista de empleados
+    
     const newEmployee = {
       ...registerResponse.data,
-      roleId: 2, // Aseguramos que se muestre como empleado
-      role: { name: 'Empleado' } // Para la visualización
+      roleId: 2, 
+      role: { name: 'Empleado' } 
     };
 
     setEmpleados([...empleados, newEmployee]);
@@ -187,27 +187,25 @@ const manejarAprobacion = async (extraHourId, accion) => {
 
 const eliminarEmpleado = async (id) => {
   try {
-    // Buscar el usuario a eliminar
+    
     const usuarioAEliminar = empleados.find(emp => emp.id === id);
     
-    // Verificar si es el admin principal
+    
     if (usuarioAEliminar && usuarioAEliminar.email === "admin@admin.com") {
       alert("No se puede eliminar al usuario administrador principal");
       return;
     }
 
-    // Confirmación del usuario
+    
     if (!window.confirm(`¿Está seguro que desea eliminar al usuario ${usuarioAEliminar?.name || ''}?`)) {
       return;
     }
 
-    // Llamar al endpoint de eliminación
     await api.delete(`/api/users/${id}`);
 
-    // Actualizar el estado local
     setEmpleados(empleados.filter(emp => emp.id !== id));
     setStats({ ...stats, totalEmpleados: empleados.length - 1 });
-    
+
     alert("Usuario eliminado correctamente");
   } catch (error) {
     console.error("Error al eliminar empleado:", error);
@@ -425,7 +423,7 @@ const eliminarEmpleado = async (id) => {
               }`}>
               <p className="text-sm">
                 <strong>Nota:</strong> Todos los usuarios creados tendrán rol de <strong>Empleado</strong>
-                y no podrán acceder a funciones administrativas.
+                <br />y no podrán acceder a funciones administrativas.
               </p>
             </div>
 
