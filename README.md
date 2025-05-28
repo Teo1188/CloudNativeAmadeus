@@ -115,7 +115,7 @@ dotnet ef database update --project ExtraHours.Infrastructure --startup-project 
 
 Esto creará las tablas necesarias en la base de datos especificada.
 
-5. Ejecutar la aplicación:
+6. Ejecutar la aplicación:
 
 ingresa a la carpeta de ExtraHours.API:
 
@@ -131,7 +131,19 @@ dotnet run
 
 Establece ExtraHours.API como el proyecto de inicio y ejecuta la aplicación. La API estará disponible en "https://localhost:5001->puerto asignado" + /swagger
 
+7. Datos de acceso para pruebas:
 
+estos datos son datos quemados en la base de datos que nos permitiran acceder a la herramienta y poder realizar pruebas:
+
+usuarios:
+
+admin@admin.com
+pass: admin
+
+dante@empleado.com
+pass: dante
+
+-----------------------------------------------------------------------------------------------------------------------------
 
 ## 🏃🏃🏃🏃🏃🏃🏃Equipo 5:
 
