@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.Infrastructure\\ExtraHours.Infrastructure.csproj": {}
+    "D:\\CloudNativeAmadeus\\ExtraHours.Infrastructure\\ExtraHours.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\ExtraHours.CORE.csproj": {
+    "D:\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
+        "projectUniqueName": "D:\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
         "projectName": "ExtraHours.CORE",
-        "projectPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
-        "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\obj\\",
+        "projectPath": "D:\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
+        "packagesPath": "C:\\Users\\MAYE SALAS\\.nuget\\packages\\",
+        "outputPath": "D:\\CloudNativeAmadeus\\ExtraHours.CORE\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\MAYE SALAS\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -71,24 +71,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.Infrastructure\\ExtraHours.Infrastructure.csproj": {
+    "D:\\CloudNativeAmadeus\\ExtraHours.Infrastructure\\ExtraHours.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.Infrastructure\\ExtraHours.Infrastructure.csproj",
+        "projectUniqueName": "D:\\CloudNativeAmadeus\\ExtraHours.Infrastructure\\ExtraHours.Infrastructure.csproj",
         "projectName": "ExtraHours.Infrastructure",
-        "projectPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.Infrastructure\\ExtraHours.Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.Infrastructure\\obj\\",
+        "projectPath": "D:\\CloudNativeAmadeus\\ExtraHours.Infrastructure\\ExtraHours.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\MAYE SALAS\\.nuget\\packages\\",
+        "outputPath": "D:\\CloudNativeAmadeus\\ExtraHours.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\MAYE SALAS\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -103,8 +103,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\ExtraHours.CORE.csproj": {
-                "projectPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\ExtraHours.CORE.csproj"
+              "D:\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj": {
+                "projectPath": "D:\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj"
               }
             }
           }
@@ -164,7 +164,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
