@@ -76,3 +76,16 @@ C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-m
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.pdb
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.CORE\obj\Debug\net9.0\ref\ExtraHours.CORE.dll
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.sourcelink.json
+D:\CloudNativeAmadeus\ExtraHours.CORE\bin\Debug\net9.0\ExtraHours.CORE.deps.json
+D:\CloudNativeAmadeus\ExtraHours.CORE\bin\Debug\net9.0\ExtraHours.CORE.dll
+D:\CloudNativeAmadeus\ExtraHours.CORE\bin\Debug\net9.0\ExtraHours.CORE.pdb
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.csproj.AssemblyReference.cache
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.GeneratedMSBuildEditorConfig.editorconfig
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.AssemblyInfoInputs.cache
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.AssemblyInfo.cs
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.csproj.CoreCompileInputs.cache
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.sourcelink.json
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.dll
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\refint\ExtraHours.CORE.dll
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ExtraHours.CORE.pdb
+D:\CloudNativeAmadeus\ExtraHours.CORE\obj\Debug\net9.0\ref\ExtraHours.CORE.dll
