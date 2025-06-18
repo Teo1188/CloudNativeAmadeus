@@ -538,23 +538,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\ASUS\\.nuget\\packages\\": {},
+    "C:\\Users\\Admin\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
+      "projectUniqueName": "C:\\Users\\Admin\\Documents\\Nodo\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
       "projectName": "ExtraHours.CORE",
-      "projectPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
-      "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\ProyectoProfundizacion\\BackEnd-Grupo5-main\\ExtraHours.CORE\\obj\\",
+      "projectPath": "C:\\Users\\Admin\\Documents\\Nodo\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
+      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Admin\\Documents\\Nodo\\CloudNativeAmadeus\\ExtraHours.CORE\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
