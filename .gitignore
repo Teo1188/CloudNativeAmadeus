@@ -1,0 +1,57 @@
+# Node.js / Vite / React (Frontend)
+Client/node_modules/
+Client/dist/
+Client/.env
+Client/.env.*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# .NET (Backend)
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+
+# Visual Studio
+.vscode/
+.vs/
+*.swp
+
+# Build results
+**/out/
+**/publish/
+**/TestResults/
+**/ExtraHours.API/Properties/launchSettings.json
+
+# Database files
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# Environment files
+*.env
+
+# Others
+*.tmp
+*.bak
+*.old
+
+# Ignore local settings
+ExtraHours.API/appsettings.Development.json
+ExtraHours.API/appsettings.Local.json
+
+# Ignore coverage reports
+coverage/
+Client/coverage/
+**/coverage/
