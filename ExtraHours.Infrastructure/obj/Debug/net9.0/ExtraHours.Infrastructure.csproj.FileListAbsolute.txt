@@ -106,3 +106,21 @@ C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-m
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.genruntimeconfig.cache
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.Infrastructure\obj\Debug\net9.0\ref\ExtraHours.Infrastructure.dll
 C:\Users\ASUS\OneDrive\Documentos\Codigo\ProyectoProfundizacion\BackEnd-Grupo5-main\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.sourcelink.json
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\bin\Debug\net9.0\ExtraHours.Infrastructure.deps.json
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\bin\Debug\net9.0\ExtraHours.Infrastructure.runtimeconfig.json
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\bin\Debug\net9.0\ExtraHours.Infrastructure.dll
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\bin\Debug\net9.0\ExtraHours.Infrastructure.pdb
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\bin\Debug\net9.0\ExtraHours.CORE.dll
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\bin\Debug\net9.0\ExtraHours.CORE.pdb
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.AssemblyInfo.cs
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.sourcelink.json
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHou.2FF8663B.Up2Date
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.dll
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\refint\ExtraHours.Infrastructure.dll
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.pdb
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ExtraHours.Infrastructure.genruntimeconfig.cache
+C:\Users\ASUS\OneDrive\Documentos\Codigo\Nueva carpeta (2)\CloudNativeAmadeus\ExtraHours.Infrastructure\obj\Debug\net9.0\ref\ExtraHours.Infrastructure.dll

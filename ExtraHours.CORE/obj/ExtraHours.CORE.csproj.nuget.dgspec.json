@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Admin\\Documents\\Nodo\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj": {}
+    "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\Nueva carpeta (2)\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Admin\\Documents\\Nodo\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj": {
+    "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\Nueva carpeta (2)\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\Documents\\Nodo\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
+        "projectUniqueName": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\Nueva carpeta (2)\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
         "projectName": "ExtraHours.CORE",
-        "projectPath": "C:\\Users\\Admin\\Documents\\Nodo\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
-        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\Documents\\Nodo\\CloudNativeAmadeus\\ExtraHours.CORE\\obj\\",
+        "projectPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\Nueva carpeta (2)\\CloudNativeAmadeus\\ExtraHours.CORE\\ExtraHours.CORE.csproj",
+        "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\ASUS\\OneDrive\\Documentos\\Codigo\\Nueva carpeta (2)\\CloudNativeAmadeus\\ExtraHours.CORE\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
