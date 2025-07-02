@@ -1,0 +1,28 @@
+# Workflow that builds a .NET Project
+
+name: .Net Amadeus
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v4
+        - name: Setup .NET
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: 9.0.x
+        
+        - name: Restore Dependencies
+          run: dotnet restore
+        - name: Test Environment
+          run: dotnet test
+        - name: Build project
+          run: dotnet build --no-restore -c Release --verbosity normal
+ 
