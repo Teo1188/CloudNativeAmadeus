@@ -10,4 +10,4 @@ RUN dotnet restore "./ExtraHours.API/./ExtraHours.API.csproj"
 COPY . .
 RUN dotnet test
 RUN dotnet build -c $BUILD_CONFIGURATION
-CMD ["dotnet", "watch"]
+CMD ["dotnet", "run"]
