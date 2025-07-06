@@ -6,6 +6,6 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(),tailwindcss()],
   define: {
-    VITE_API_URL: process.env.VITE_API_URL || "cloud-native-amadeus.vercel.app",
-  },
+  VITE_API_URL: JSON.stringify(process.env.VITE_API_URL || "https://cloud-native-amadeus.vercel.app"),
+},
 })
