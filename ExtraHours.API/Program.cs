@@ -74,7 +74,7 @@ try
  
     // 🌐 CONFIGURACIÓN CORS con variables de entorno
     var allowedOrigins = builder.Configuration["ALLOWED_ORIGINS"]?.Split(',') 
-                       ?? new[] { "http://localhost:3000", "http://localhost:5173", "http://localhost:4200" };
+                       ?? new[] { "http://localhost:3000", "http://localhost:5173", "http://localhost:4200", "cloud-native-amadeus.vercel.app" };
  
     builder.Services.AddCors(options => 
     {
