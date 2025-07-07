@@ -74,7 +74,7 @@ try
  
     // 🌐 CONFIGURACIÓN CORS con variables de entorno
     var allowedOrigins = builder.Configuration["ALLOWED_ORIGINS"]?.Split(',') 
-                       ?? new[] { "http://localhost:3000", "http://localhost:5173", "http://localhost:4200", "cloud-native-amadeus.vercel.app" };
+                       ?? new[] { "http://localhost:3000", "http://localhost:5173", "http://localhost:4200", "cloud-native-amadeus.vercel.app","postgresql://amadeus_:ub3q6HRHEeLCE7blAdL7UbVAhx0ZKmnY@dpg-d1ktrbvdiees73evnfp0-a.oregon-postgres.render.com/amadeus_extrahours" };
  
     builder.Services.AddCors(options => 
     {
