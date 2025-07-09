@@ -447,7 +447,6 @@ const ExtraHoursPanel = () => {
                     value={formData.date}
                     onChange={handleInputChange}
                     required
-                    min={new Date().toISOString().split('T')[0]}
                   />
                 </div>
 
