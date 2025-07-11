@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, X, Check, AlertTriangle, Info } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { FaSearch } from "react-icons/fa";
 import api from '../api/axiosInstance';
@@ -18,6 +18,16 @@ const ExtraHoursPanel = () => {
   const [editingId, setEditingId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   
+  // Estados para el modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    type: 'info', // 'info', 'success', 'error', 'confirm'
+    onConfirm: null,
+    onCancel: null
+  });
+
   const [formData, setFormData] = useState({
     userId: "",
     date: "",
@@ -34,6 +44,23 @@ const ExtraHoursPanel = () => {
     horasAprobadas: 0,
     horasPendientes: 0
   });
+
+  // Función para mostrar modal
+  const showModal = (title, message, type = 'info', onConfirm = null, onCancel = null) => {
+    setModalConfig({
+      title,
+      message,
+      type,
+      onConfirm,
+      onCancel
+    });
+    setModalOpen(true);
+  };
+
+  // Función para cerrar modal
+  const closeModal = () => {
+    setModalOpen(false);
+  };
 
   // Función para calcular y redondear horas
   const calculateRoundedHours = (startTime, endTime) => {
@@ -94,7 +121,7 @@ const ExtraHoursPanel = () => {
         setDepartamentos(deptResponse.data);
       } catch (error) {
         console.error("Error loading data:", error);
-        alert("Error al cargar datos iniciales");
+        showModal('Error', 'Error al cargar datos iniciales', 'error');
       }
     };
     
@@ -176,7 +203,7 @@ const ExtraHoursPanel = () => {
     
     const errors = validateForm();
     if (errors.length > 0) {
-      alert(`Errores:\n${errors.join("\n")}`);
+      showModal('Errores en el formulario', errors.join("\n"), 'error');
       return;
     }
     
@@ -234,7 +261,11 @@ const ExtraHoursPanel = () => {
       setEmployeeSearchTerm("");
       setTotalHours(0);
       
-      alert(`Horas extras ${isEditing ? 'actualizadas' : 'registradas'} correctamente!`);
+      showModal(
+        'Éxito', 
+        `Horas extras ${isEditing ? 'actualizadas' : 'registradas'} correctamente!`, 
+        'success'
+      );
       
     } catch (error) {
       console.error("Error al registrar:", error.response?.data || error.message);
@@ -244,14 +275,18 @@ const ExtraHoursPanel = () => {
           ? JSON.stringify(error.response.data) 
           : error.response.data;
       }
-      alert(errorMessage);
+      showModal('Error', errorMessage, 'error');
     }
   };
 
   // Manejar edición de registro
   const handleEdit = (registro) => {
     if (registro.status !== "Pendiente") {
-      alert("No se pueden editar horas extras ya aprobadas o denegadas");
+      showModal(
+        'Edición no permitida', 
+        "No se pueden editar horas extras ya aprobadas o denegadas", 
+        'error'
+      );
       return;
     }
 
@@ -293,22 +328,29 @@ const ExtraHoursPanel = () => {
   const handleDelete = async (id) => {
     const registro = registros.find(r => r.id === id);
     if (registro && registro.status !== "Pendiente") {
-      alert("No se pueden eliminar horas extras ya aprobadas o denegadas");
+      showModal(
+        'Eliminación no permitida', 
+        "No se pueden eliminar horas extras ya aprobadas o denegadas", 
+        'error'
+      );
       return;
     }
 
-    if (!window.confirm("¿Está seguro que desea eliminar este registro de horas extras?")) {
-      return;
-    }
-    
-    try {
-      await api.delete(`/api/extra-hours/${id}`);
-      setRegistros(registros.filter(reg => reg.id !== id));
-      alert("Registro eliminado correctamente");
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      alert("Error al eliminar el registro");
-    }
+    showModal(
+      'Confirmar eliminación', 
+      "¿Está seguro que desea eliminar este registro de horas extras?",
+      'confirm',
+      async () => {
+        try {
+          await api.delete(`/api/extra-hours/${id}`);
+          setRegistros(registros.filter(reg => reg.id !== id));
+          showModal('Éxito', "Registro eliminado correctamente", 'success');
+        } catch (error) {
+          console.error("Error al eliminar:", error);
+          showModal('Error', "Error al eliminar el registro", 'error');
+        }
+      }
+    );
   };
 
   // Estilos dinámicos
@@ -316,8 +358,74 @@ const ExtraHoursPanel = () => {
   const panelBgColor = isDark ? "bg-gray-800/80" : "bg-white";
   const inputStyle = `p-2 border rounded ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"}`;
 
+  // Iconos para el modal según el tipo
+  const ModalIcon = () => {
+    switch(modalConfig.type) {
+      case 'success':
+        return <Check className="w-10 h-10 text-green-500" />;
+      case 'error':
+        return <AlertTriangle className="w-10 h-10 text-red-500" />;
+      case 'confirm':
+        return <Info className="w-10 h-10 text-blue-500" />;
+      default:
+        return <Info className="w-10 h-10 text-blue-500" />;
+    }
+  };
+
+  // Color del botón principal según el tipo de modal
+  const modalButtonClass = () => {
+    switch(modalConfig.type) {
+      case 'success':
+        return "bg-green-600 hover:bg-green-700";
+      case 'error':
+        return "bg-red-600 hover:bg-red-700";
+      case 'confirm':
+        return "bg-blue-600 hover:bg-blue-700";
+      default:
+        return "bg-blue-600 hover:bg-blue-700";
+    }
+  };
+
   return (
     <div className={`min-h-screen w-full ${mainBgColor} text-${isDark ? "white" : "gray-800"} transition-colors duration-200`}>
+      {/* Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`rounded-lg shadow-xl w-full max-w-md ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="p-6">
+              <div className="flex flex-col items-center space-y-4">
+                <ModalIcon />
+                <h3 className="text-xl font-bold text-center">{modalConfig.title}</h3>
+                <p className="text-center whitespace-pre-line">{modalConfig.message}</p>
+              </div>
+              
+              <div className="mt-6 flex justify-center space-x-3">
+                {modalConfig.type === 'confirm' && (
+                  <button
+                    onClick={() => {
+                      if (modalConfig.onCancel) modalConfig.onCancel();
+                      closeModal();
+                    }}
+                    className={`px-4 py-2 rounded ${isDark ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} transition-colors`}
+                  >
+                    Cancelar
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    if (modalConfig.onConfirm) modalConfig.onConfirm();
+                    closeModal();
+                  }}
+                  className={`px-4 py-2 rounded text-white ${modalButtonClass()} transition-colors`}
+                >
+                  {modalConfig.type === 'confirm' ? 'Confirmar' : 'Aceptar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto p-6 space-y-6">
         {/* Resumen de Horas Extras */}
         <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
