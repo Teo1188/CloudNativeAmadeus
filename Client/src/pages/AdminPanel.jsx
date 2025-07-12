@@ -16,8 +16,12 @@ const AdminPanel = ({ onClose }) => {
     rol: "empleado",
     password: ""
   });
+  const [loading, setLoading] = useState({
+    horas: true,
+    empleados: true,
+    general: true
+  });
 
-  // Estados para el modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     title: '',
@@ -34,14 +38,13 @@ const AdminPanel = ({ onClose }) => {
     totalEmpleados: 0
   });
 
-  // Función para exportar a Excel
   const exportToExcel = async () => {
     try {
-      // Obtener los datos nuevamente para asegurarnos de tener los más actualizados
+      showModal('Exportando', 'Preparando archivo para descarga...', 'info');
+      
       const response = await api.get('/api/extra-hours?status=Pendiente');
       const dataToExport = response.data;
       
-      // Crear el contenido del CSV
       let csvContent = "Nombre Empleado,Fecha,Actividad,Horas,Tipo,Estado\n";
       
       dataToExport.forEach(registro => {
@@ -57,24 +60,23 @@ const AdminPanel = ({ onClose }) => {
         csvContent += row + '\n';
       });
       
-      // Crear el archivo y descargarlo
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'horas_extras_pendientes.csv');
+      link.setAttribute('download', 'horas_extras_reporte.csv');
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
+      closeModal();
     } catch (error) {
       console.error("Error al exportar a Excel:", error);
       showModal('Error', 'No se pudo exportar los datos a Excel', 'error');
     }
   };
 
-  // Función para mostrar modal
   const showModal = (title, message, type = 'info', onConfirm = null, onCancel = null) => {
     setModalConfig({
       title,
@@ -86,7 +88,6 @@ const AdminPanel = ({ onClose }) => {
     setModalOpen(true);
   };
 
-  // Función para cerrar modal
   const closeModal = () => {
     setModalOpen(false);
   };
@@ -94,16 +95,37 @@ const AdminPanel = ({ onClose }) => {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const horasResponse = await api.get('/api/extra-hours?status=Pendiente');
+        setLoading({
+          horas: true,
+          empleados: true,
+          general: true
+        });
+
+        const [horasResponse, empleadosResponse] = await Promise.all([
+          api.get('/api/extra-hours?status=Pendiente'),
+          api.get('/api/users')
+        ]);
+
         setRegistros(horasResponse.data);
-        const empleadosResponse = await api.get('/api/users');
         setEmpleados(empleadosResponse.data);
         calculateStats(horasResponse.data, empleadosResponse.data);
+
+        setLoading({
+          horas: false,
+          empleados: false,
+          general: false
+        });
       } catch (error) {
         console.error("Error loading data:", error);
+        setLoading({
+          horas: false,
+          empleados: false,
+          general: false
+        });
         showModal('Error', 'Error al cargar datos iniciales', 'error');
       }
     };
+    
     loadInitialData();
   }, []);
 
@@ -142,7 +164,7 @@ const AdminPanel = ({ onClose }) => {
   }, [searchTerm, registros]);
 
   const manejarAprobacion = async (extraHourId, accion, e) => {
-    e.preventDefault(); // Prevenir comportamiento por defecto
+    e.preventDefault();
     try {
       if (!extraHourId) throw new Error("ID de horas extra no proporcionado");
 
@@ -197,7 +219,7 @@ const AdminPanel = ({ onClose }) => {
   };
 
   const crearEmpleado = async (e) => {
-    e.preventDefault(); // Prevenir comportamiento por defecto
+    e.preventDefault();
     if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
       showModal('Error', 'Por favor complete todos los campos', 'error');
       return;
@@ -255,7 +277,7 @@ const AdminPanel = ({ onClose }) => {
   };
 
   const eliminarEmpleado = async (id, e) => {
-    e.preventDefault(); // Prevenir comportamiento por defecto
+    e.preventDefault();
     try {
       const usuarioAEliminar = empleados.find(emp => emp.id === id);
       
@@ -296,7 +318,6 @@ const AdminPanel = ({ onClose }) => {
     }
   };
 
-  // Iconos para el modal según el tipo
   const ModalIcon = () => {
     switch(modalConfig.type) {
       case 'success':
@@ -310,7 +331,6 @@ const AdminPanel = ({ onClose }) => {
     }
   };
 
-  // Color del botón principal según el tipo de modal
   const modalButtonClass = () => {
     switch(modalConfig.type) {
       case 'success':
@@ -324,12 +344,21 @@ const AdminPanel = ({ onClose }) => {
     }
   };
 
+  const TableRowSkeleton = ({ cols }) => (
+    <tr className={`border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}>
+      {Array(cols).fill().map((_, i) => (
+        <td key={i} className="p-3">
+          <div className={`h-6 rounded ${isDark ? "bg-gray-700" : "bg-gray-200"} animate-pulse`}></div>
+        </td>
+      ))}
+    </tr>
+  );
+
   const mainBgColor = isDark ? "bg-gray-900" : "bg-gray-100";
   const panelBgColor = isDark ? "bg-gray-800/80" : "bg-white";
 
   return (
     <div className="relative">
-      {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div 
@@ -374,53 +403,65 @@ const AdminPanel = ({ onClose }) => {
 
       <div className={`min-h-screen w-full ${mainBgColor} text-${isDark ? "white" : "gray-800"} transition-colors duration-200`}>
         <div className="container mx-auto p-6 space-y-6">
-          {/* Resumen Administrativo */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <h3 className="text-xl font-bold mb-4">Resumen Administrativo</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-              <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
-                isDark ? "bg-blue-900/30" : "bg-blue-50"
-              }`}>
-                <Clock className="mx-auto mb-3 text-blue-500" size={40} />
-                <h4 className={`text-base transition-colors duration-200 ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>Total horas registradas</h4>
-                <p className="text-2xl font-bold text-blue-600">{stats.totalHoras}</p>
-              </div>
-              
-              <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
-                isDark ? "bg-green-900/30" : "bg-green-50"
-              }`}>
-                <UserCheck className="mx-auto mb-3 text-green-500" size={40} />
-                <h4 className={`text-base transition-colors duration-200 ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>Solicitudes aprobadas</h4>
-                <p className="text-2xl font-bold text-green-600">{stats.horasAprobadas}</p>
-              </div>
-              
-              <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
-                isDark ? "bg-yellow-900/30" : "bg-yellow-50"
-              }`}>
-                <Clock className="mx-auto mb-3 text-yellow-500" size={40} />
-                <h4 className={`text-base transition-colors duration-200 ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>Solicitudes pendientes</h4>
-                <p className="text-2xl font-bold text-yellow-600">{stats.horasPendientes}</p>
-              </div>
-              
-              <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
-                isDark ? "bg-purple-900/30" : "bg-purple-50"
-              }`}>
-                <Users className="mx-auto mb-3 text-purple-500" size={40} />
-                <h4 className={`text-base transition-colors duration-200 ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>Total empleados</h4>
-                <p className="text-2xl font-bold text-purple-600">{stats.totalEmpleados}</p>
-              </div>
+              {loading.general ? (
+                Array(4).fill().map((_, i) => (
+                  <div key={i} className={`p-5 rounded-lg text-center transition-colors duration-200 ${
+                    isDark ? "bg-gray-800/30" : "bg-gray-100"
+                  }`}>
+                    <div className={`mx-auto mb-3 h-10 w-10 rounded-full ${isDark ? "bg-gray-700" : "bg-gray-300"} animate-pulse`}></div>
+                    <div className={`h-4 mb-2 rounded ${isDark ? "bg-gray-700" : "bg-gray-300"} animate-pulse w-3/4 mx-auto`}></div>
+                    <div className={`h-8 rounded ${isDark ? "bg-gray-700" : "bg-gray-300"} animate-pulse w-1/2 mx-auto`}></div>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
+                    isDark ? "bg-blue-900/30" : "bg-blue-50"
+                  }`}>
+                    <Clock className="mx-auto mb-3 text-blue-500" size={40} />
+                    <h4 className={`text-base transition-colors duration-200 ${
+                      isDark ? "text-gray-300" : "text-gray-600"
+                    }`}>Total horas registradas</h4>
+                    <p className="text-2xl font-bold text-blue-600">{stats.totalHoras}</p>
+                  </div>
+                  
+                  <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
+                    isDark ? "bg-green-900/30" : "bg-green-50"
+                  }`}>
+                    <UserCheck className="mx-auto mb-3 text-green-500" size={40} />
+                    <h4 className={`text-base transition-colors duration-200 ${
+                      isDark ? "text-gray-300" : "text-gray-600"
+                    }`}>Solicitudes aprobadas</h4>
+                    <p className="text-2xl font-bold text-green-600">{stats.horasAprobadas}</p>
+                  </div>
+                  
+                  <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
+                    isDark ? "bg-yellow-900/30" : "bg-yellow-50"
+                  }`}>
+                    <Clock className="mx-auto mb-3 text-yellow-500" size={40} />
+                    <h4 className={`text-base transition-colors duration-200 ${
+                      isDark ? "text-gray-300" : "text-gray-600"
+                    }`}>Solicitudes pendientes</h4>
+                    <p className="text-2xl font-bold text-yellow-600">{stats.horasPendientes}</p>
+                  </div>
+                  
+                  <div className={`p-5 rounded-lg text-center transition-colors duration-200 ${
+                    isDark ? "bg-purple-900/30" : "bg-purple-50"
+                  }`}>
+                    <Users className="mx-auto mb-3 text-purple-500" size={40} />
+                    <h4 className={`text-base transition-colors duration-200 ${
+                      isDark ? "text-gray-300" : "text-gray-600"
+                    }`}>Total empleados</h4>
+                    <p className="text-2xl font-bold text-purple-600">{stats.totalEmpleados}</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Buscador */}
           <div className="mb-6 flex items-center">
             <div className="relative w-full">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -432,11 +473,11 @@ const AdminPanel = ({ onClose }) => {
                 }`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={loading.horas}
               />
             </div>
           </div>
 
-          {/* Horas Extras Pendientes */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center gap-2">
@@ -444,13 +485,35 @@ const AdminPanel = ({ onClose }) => {
               </h2>
               <button 
                 onClick={exportToExcel}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors ${
+                  loading.horas ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={loading.horas}
               >
                 <FaFileExcel /> Exportar a Excel
               </button>
             </div>
             
-            {filteredRegistros.length > 0 ? (
+            {loading.horas ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className={`text-left transition-colors duration-200 ${
+                      isDark ? "bg-gray-700" : "bg-gray-100"
+                    }`}>
+                      {['Empleado', 'Fecha', 'Actividad', 'Horas', 'Tipo', 'Estado', 'Acciones'].map((header, i) => (
+                        <th key={i} className="p-3">{header}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array(5).fill().map((_, i) => (
+                      <TableRowSkeleton key={i} cols={7} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : filteredRegistros.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
@@ -522,7 +585,6 @@ const AdminPanel = ({ onClose }) => {
             )}
           </div>
 
-          {/* Gestión de Empleados */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Users className="text-purple-500" /> Gestión de Empleados
@@ -538,6 +600,7 @@ const AdminPanel = ({ onClose }) => {
                   value={nuevoEmpleado.nombre}
                   onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, nombre: e.target.value })}
                   required
+                  disabled={loading.empleados}
                 />
                 <input
                   type="email"
@@ -547,6 +610,7 @@ const AdminPanel = ({ onClose }) => {
                   value={nuevoEmpleado.email}
                   onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, email: e.target.value })}
                   required
+                  disabled={loading.empleados}
                 />
                 <input
                   type="password"
@@ -557,19 +621,19 @@ const AdminPanel = ({ onClose }) => {
                   onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, password: e.target.value })}
                   minLength="8"
                   required
+                  disabled={loading.empleados}
                 />
                 <button
                   type="submit"
                   className={`text-white p-2 rounded transition-colors duration-200 ${isDark ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700"
                     }`}
-                  disabled={!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password}
+                  disabled={!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password || loading.empleados}
                 >
-                  Agregar Empleado
+                  {loading.empleados ? 'Cargando...' : 'Agregar Empleado'}
                 </button>
               </div>
             </form>
 
-            {/* Mensaje explicativo */}
             <div className={`mb-4 p-3 rounded ${isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700"
               }`}>
               <p className="text-sm">
@@ -578,51 +642,70 @@ const AdminPanel = ({ onClose }) => {
               </p>
             </div>
 
-            {/* Mensaje de validación de contraseña */}
             {nuevoEmpleado.password && nuevoEmpleado.password.length < 8 && (
               <p className={`text-sm mb-4 ${isDark ? "text-red-400" : "text-red-600"}`}>
                 La contraseña debe tener al menos 8 caracteres
               </p>
             )}
 
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className={`text-left transition-colors duration-200 ${isDark ? "bg-gray-700" : "bg-gray-100"
-                    }`}>
-                    <th className="p-3">Nombre</th>
-                    <th className="p-3">Email</th>
-                    <th className="p-3">Rol</th>
-                    <th className="p-3">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {empleados.map((empleado) => (
-                    <tr key={empleado.id} className={`border-t transition-colors duration-200 ${isDark ? "border-gray-700" : "border-gray-200"
+            {loading.empleados ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className={`text-left transition-colors duration-200 ${isDark ? "bg-gray-700" : "bg-gray-100"
                       }`}>
-                      <td className="p-3">{empleado.name}</td>
-                      <td className="p-3">{empleado.email}</td>
-                      <td className="p-3 capitalize">
-                        {empleado.roleId === 1 ? 'Administrador' : 'Empleado'}
-                      </td>
-                      <td className="p-3">
-                        <button
-                          onClick={(e) => eliminarEmpleado(empleado.id, e)}
-                          className={`px-3 py-1 rounded text-sm ${isDark ? "bg-red-700 hover:bg-red-800" : "bg-red-600 hover:bg-red-700"
-                            } text-white flex items-center gap-1`}
-                          disabled={empleado.email === "admin@admin.com"}
-                        >
-                          <UserX size={16} /> Eliminar
-                          {empleado.email === "admin@admin.com" && (
-                            <span className="sr-only">(No se puede eliminar al administrador principal)</span>
-                          )}
-                        </button>
-                      </td>
+                      {['Nombre', 'Email', 'Rol', 'Acciones'].map((header, i) => (
+                        <th key={i} className="p-3">{header}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {Array(5).fill().map((_, i) => (
+                      <TableRowSkeleton key={i} cols={4} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className={`text-left transition-colors duration-200 ${isDark ? "bg-gray-700" : "bg-gray-100"
+                      }`}>
+                      <th className="p-3">Nombre</th>
+                      <th className="p-3">Email</th>
+                      <th className="p-3">Rol</th>
+                      <th className="p-3">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {empleados.map((empleado) => (
+                      <tr key={empleado.id} className={`border-t transition-colors duration-200 ${isDark ? "border-gray-700" : "border-gray-200"
+                        }`}>
+                        <td className="p-3">{empleado.name}</td>
+                        <td className="p-3">{empleado.email}</td>
+                        <td className="p-3 capitalize">
+                          {empleado.roleId === 1 ? 'Administrador' : 'Empleado'}
+                        </td>
+                        <td className="p-3">
+                          <button
+                            onClick={(e) => eliminarEmpleado(empleado.id, e)}
+                            className={`px-3 py-1 rounded text-sm ${isDark ? "bg-red-700 hover:bg-red-800" : "bg-red-600 hover:bg-red-700"
+                              } text-white flex items-center gap-1`}
+                            disabled={empleado.email === "admin@admin.com"}
+                          >
+                            <UserX size={16} /> Eliminar
+                            {empleado.email === "admin@admin.com" && (
+                              <span className="sr-only">(No se puede eliminar al administrador principal)</span>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>
