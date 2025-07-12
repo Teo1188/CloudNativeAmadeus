@@ -23,15 +23,15 @@
 
 ## 📋 Descripción General
 
-**CloudNativeAmadeus** es un sistema completo de gestión de horas extra desarrollado para la empresa **Amadeus** por el **Grupo 5**. El proyecto implementa una arquitectura moderna con separación de responsabilidades, utilizando tecnologías cloud-native para garantizar escalabilidad, mantenibilidad y robustez.
+**CloudNativeAmadeus** es un sistema integral para la gestión de horas extra en empresas, desarrollado por el **Grupo 5** para **Amadeus**. Implementa una arquitectura moderna, escalable y mantenible, con separación de responsabilidades y tecnologías cloud-native.
 
 ### 🎯 Objetivos del Sistema
 
-- **Gestión de Horas Extra**: Registro, aprobación y seguimiento de horas extra de empleados
-- **Control de Acceso**: Sistema de autenticación y autorización basado en roles
-- **Administración**: Panel de administración para gestión de usuarios, departamentos y configuraciones
-- **Reportes**: Visualización y análisis de datos de horas extra
-- **Interfaz Moderna**: UI/UX intuitiva y responsiva
+- **Gestión de Horas Extra**: Registro, aprobación y seguimiento de horas extra de empleados.
+- **Control de Acceso**: Autenticación y autorización basada en roles.
+- **Administración**: Panel para gestión de usuarios, departamentos y configuraciones.
+- **Reportes**: Visualización y análisis de datos.
+- **Interfaz Moderna**: UI/UX intuitiva y responsiva.
 
 ---
 
@@ -41,42 +41,137 @@
 
 ```
 CloudNativeAmadeus/
-├── Client/                          # Frontend React + Vite
-│   ├── src/
-│   │   ├── api/                     # Configuración de API
-│   │   ├── components/              # Componentes reutilizables
-│   │   ├── context/                 # Contextos de React
-│   │   ├── pages/                   # Páginas de la aplicación
-│   │   ├── routes/                  # Configuración de rutas
-│   │   ├── store/                   # Estado global (Redux)
-│   │   └── styles.css               # Estilos globales
-│   ├── public/                      # Archivos estáticos
-│   └── package.json                 # Dependencias del frontend
-├── ExtraHours.API/                  # API REST (.NET 9)
-│   ├── Controllers/                 # Controladores de la API
-│   ├── Utils/                       # Utilidades (JWT, etc.)
-│   └── Program.cs                   # Configuración de la aplicación
-├── ExtraHours.CORE/                 # Lógica de negocio
-│   ├── Models/                      # Entidades del dominio
-│   ├── Repositories/                # Interfaces de repositorios
-│   └── Services/                    # Interfaces de servicios
-├── ExtraHours.Infrastructure/       # Capa de infraestructura
-│   ├── Data/                        # Contexto de base de datos
-│   ├── Repositories/                # Implementación de repositorios
-│   ├── Services/                    # Implementación de servicios
-│   └── Migrations/                  # Migraciones de Entity Framework
-├── ExtraHours.Test/                 # Pruebas unitarias
-└── ExtraHourGroup5.sln              # Solución de Visual Studio
+├── .editorconfig
+├── .gitignore
+├── Dockerfile
+├── ExtraHourGroup5.sln
+├── README.md
+├── .github/
+│   └── workflows/
+│       ├── dotnet.yml
+│       └── node.yaml
+├── Client/
+│   ├── .dockerignore
+│   ├── .gitignore
+│   ├── Dockerfile
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── README.md
+│   ├── vercel.json
+│   ├── vite.config.js
+│   ├── public/
+│   │   └── vite.svg
+│   └── src/
+│       ├── App.jsx
+│       ├── main.jsx
+│       ├── styles.css
+│       ├── api/
+│       │   └── axiosInstance.js
+│       ├── assets/
+│       │   └── react.svg
+│       ├── components/
+│       │   ├── ExtraHour.jsx
+│       │   ├── Layout.jsx
+│       │   └── Navbar.jsx
+│       ├── context/
+│       │   └── ThemeContext.jsx
+│       ├── pages/
+│       │   ├── AdminPanel.jsx
+│       │   ├── Dashboard.jsx
+│       │   ├── EditProfile.jsx
+│       │   ├── Login.jsx
+│       │   ├── PasswordRecovery.jsx
+│       │   ├── Settings.jsx
+│       │   └── UserProfile.jsx
+│       ├── routes/
+│       │   └── ProtectedRoute.jsx
+│       └── store/
+│           ├── authSlice.js
+│           └── index.js
+├── Db-backup/
+│   └── backup_db.sql
+├── Documentacion/
+│   ├── Diagramas.pdf
+│   └── Manual de uso - Grupo 5 - Jobs.pdf
+├── ExtraHours.API/
+│   ├── appsettings.Development.json
+│   ├── appsettings.json
+│   ├── appsettings.LocalMigrate.json
+│   ├── ExtraHours.API.csproj
+│   ├── ExtraHours.API.http
+│   ├── Program.cs
+│   ├── Controllers/
+│   │   ├── ApprovalController.cs
+│   │   ├── Auth.Controller.cs
+│   │   ├── DepartmentController.cs
+│   │   ├── ExtraHourController.cs
+│   │   ├── ExtraHourTypeController.cs
+│   │   ├── PermissionController.cs
+│   │   ├── RoleController.cs
+│   │   └── UserController.cs
+│   ├── Properties/
+│   │   └── launchSettings.json
+│   └── Utils/
+│       ├── IJWTUtils.cs
+│       └── JWTUtils.cs
+├── ExtraHours.CORE/
+│   ├── Class1.cs
+│   ├── ExtraHours.CORE.csproj
+│   ├── Models/
+│   │   ├── Approval.cs
+│   │   ├── Department.cs
+│   │   ├── ExtraHour.cs
+│   │   ├── ExtraHourType.cs
+│   │   ├── Permission.cs
+│   │   ├── Role.cs
+│   │   ├── RolePermission.cs
+│   │   ├── Setting.cs
+│   │   └── User.cs
+│   ├── Repositories/
+│   │   ├── IApprovalRepository.cs
+│   │   ├── IDepartmentRepository.cs
+│   │   ├── IExtraHourRepository.cs
+│   │   ├── IExtraHourTypeRepository.cs
+│   │   ├── IPermissionRepository.cs
+│   │   ├── IRoleRepository.cs
+│   │   └── IUserRepository.cs
+│   └── Services/
+│       ├── IApprovalService.cs
+│       ├── IDepartmentService.cs
+│       ├── IExtraHourService.cs
+│       ├── IExtraHourTypeService.cs
+│       ├── IPermissionService.cs
+│       ├── IRolService.cs
+│       └── IUserService.cs
+├── ExtraHours.Infrastructure/
+│   ├── Class1.cs
+│   ├── ExtraHours.Infrastructure.csproj
+│   ├── Data/
+│   │   ├── AppDbContext.cs
+│   │   ├── AppDbContextFactory.cs
+│   │   ├── DatabaseSeeder.cs
+│   │   └── IDbContext.cs
+│   ├── Migrations/
+│   ├── Repositories/
+│   └── Services/
+├── ExtraHours.Test/
+│   ├── ApprovalServiceTests.cs
+│   ├── DepartmentServiceTest.cs
+│   ├── ExtraHours.Test.csproj
+│   ├── ExtraHourServiceTests.cs
+│   ├── ExtraHourTypeServiceTest.cs
+│   └── PermissionServiceTests.cs
 ```
 
 ### 🔄 Patrón de Arquitectura
 
 El sistema sigue el patrón **Clean Architecture** con las siguientes capas:
 
-1. **API Layer** (`ExtraHours.API`): Controladores y configuración de la aplicación
-2. **Core Layer** (`ExtraHours.CORE`): Entidades, interfaces y lógica de negocio
-3. **Infrastructure Layer** (`ExtraHours.Infrastructure`): Implementación de repositorios y servicios
-4. **Presentation Layer** (`Client`): Interfaz de usuario
+1. **API Layer** (`ExtraHours.API`): Controladores y configuración de la aplicación.
+2. **Core Layer** (`ExtraHours.CORE`): Entidades, interfaces y lógica de negocio.
+3. **Infrastructure Layer** (`ExtraHours.Infrastructure`): Implementación de repositorios y servicios.
+4. **Presentation Layer** (`Client`): Interfaz de usuario.
 
 ---
 
@@ -85,19 +180,18 @@ El sistema sigue el patrón **Clean Architecture** con las siguientes capas:
 ### Backend (.NET 9)
 
 - **Framework**: ASP.NET Core 9.0
-- **Base de Datos**: PostgreSQL con Entity Framework Core
+- **Base de Datos**: PostgreSQL + Entity Framework Core
 - **Autenticación**: JWT (JSON Web Tokens)
 - **Documentación**: Swagger/OpenAPI
 - **Patrón**: Repository Pattern + Service Layer
-- **ORM**: Entity Framework Core 9.0
 
 ### Frontend (React)
 
-- **Framework**: React 19.0
-- **Build Tool**: Vite 6.2
+- **Framework**: React 19
+- **Build Tool**: Vite 6
 - **Estado Global**: Redux Toolkit
-- **Routing**: React Router DOM 7.4
-- **UI Framework**: Tailwind CSS 4.0
+- **Routing**: React Router DOM 7
+- **UI Framework**: Tailwind CSS 4
 - **Iconos**: Heroicons, Lucide React
 - **Formularios**: React Hook Form + Yup
 - **HTTP Client**: Axios
@@ -174,11 +268,11 @@ public class Role
 
 ### Relaciones
 
-- **User** ↔ **Role**: Un usuario tiene un rol
-- **User** ↔ **Department**: Un usuario pertenece a un departamento
-- **ExtraHour** ↔ **User**: Una hora extra pertenece a un usuario
-- **ExtraHour** ↔ **User** (ApprovedBy): Una hora extra puede ser aprobada por un usuario
-- **Role** ↔ **Permission**: Un rol puede tener múltiples permisos
+- **User** ↔ **Role**: Un usuario tiene un rol.
+- **User** ↔ **Department**: Un usuario pertenece a un departamento.
+- **ExtraHour** ↔ **User**: Una hora extra pertenece a un usuario.
+- **ExtraHour** ↔ **User** (ApprovedBy): Una hora extra puede ser aprobada por un usuario.
+- **Role** ↔ **Permission**: Un rol puede tener múltiples permisos.
 
 ---
 
@@ -227,7 +321,7 @@ public class Role
 
 ---
 
-## 🚀 Instalación y Configuración
+## 🚀 Instalación y Configuración en un entorno local
 
 ### Prerrequisitos
 
@@ -239,7 +333,7 @@ public class Role
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone --branch feature-UpdateEmployee1 --single-branch https://github.com/Teo1188/CloudNativeAmadeus.git
+git clone https://github.com/Teo1188/CloudNativeAmadeus.git
 cd CloudNativeAmadeus
 ```
 
@@ -515,11 +609,11 @@ Este proyecto fue desarrollado para **Amadeus** como parte del curso de **Cloud 
 
 Para contribuir al proyecto:
 
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Haz fork del repositorio.
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`).
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`).
+4. Push a la rama (`git push origin feature/AmazingFeature`).
+5. Abre un Pull Request.
 
 ---
 
