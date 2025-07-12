@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Users, UserPlus, UserCheck, UserX, User, Check, AlertTriangle, Info } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { FaSearch, FaTimes } from "react-icons/fa";
+import { FaSearch, FaTimes, FaFileExcel } from "react-icons/fa";
 import api from '../api/axiosInstance';
 
 const AdminPanel = ({ onClose }) => {
@@ -33,6 +33,46 @@ const AdminPanel = ({ onClose }) => {
     horasPendientes: 0,
     totalEmpleados: 0
   });
+
+  // Función para exportar a Excel
+  const exportToExcel = async () => {
+    try {
+      // Obtener los datos nuevamente para asegurarnos de tener los más actualizados
+      const response = await api.get('/api/extra-hours?status=Pendiente');
+      const dataToExport = response.data;
+      
+      // Crear el contenido del CSV
+      let csvContent = "Nombre Empleado,Fecha,Actividad,Horas,Tipo,Estado\n";
+      
+      dataToExport.forEach(registro => {
+        const row = [
+          registro.user?.name || '',
+          new Date(registro.date).toLocaleDateString(),
+          registro.reason || '',
+          calculateRoundedHours(registro.startTime, registro.endTime),
+          registro.extraHourType?.name || '',
+          registro.status || ''
+        ].join(',');
+        
+        csvContent += row + '\n';
+      });
+      
+      // Crear el archivo y descargarlo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'horas_extras_pendientes.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+    } catch (error) {
+      console.error("Error al exportar a Excel:", error);
+      showModal('Error', 'No se pudo exportar los datos a Excel', 'error');
+    }
+  };
 
   // Función para mostrar modal
   const showModal = (title, message, type = 'info', onConfirm = null, onCancel = null) => {
@@ -398,9 +438,17 @@ const AdminPanel = ({ onClose }) => {
 
           {/* Horas Extras Pendientes */}
           <div className={`p-6 rounded-lg shadow transition-colors duration-200 ${panelBgColor}`}>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Clock className="text-blue-500" /> Horas Extras Pendientes
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Clock className="text-blue-500" /> Horas Extras Pendientes
+              </h2>
+              <button 
+                onClick={exportToExcel}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors`}
+              >
+                <FaFileExcel /> Exportar a Excel
+              </button>
+            </div>
             
             {filteredRegistros.length > 0 ? (
               <div className="overflow-x-auto">
