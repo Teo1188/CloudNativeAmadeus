@@ -17,12 +17,39 @@ const AdminPanel = ({ onClose }) => {
     password: ""
   });
 
+  // Estados para el modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    type: 'info', // 'info', 'success', 'error', 'confirm'
+    onConfirm: null,
+    onCancel: null
+  });
+
   const [stats, setStats] = useState({
     totalHoras: 0,
     horasAprobadas: 0,
     horasPendientes: 0,
     totalEmpleados: 0
   });
+
+  // Función para mostrar modal
+  const showModal = (title, message, type = 'info', onConfirm = null, onCancel = null) => {
+    setModalConfig({
+      title,
+      message,
+      type,
+      onConfirm,
+      onCancel
+    });
+    setModalOpen(true);
+  };
+
+  // Función para cerrar modal
+  const closeModal = () => {
+    setModalOpen(false);
+  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -34,7 +61,7 @@ const AdminPanel = ({ onClose }) => {
         calculateStats(horasResponse.data, empleadosResponse.data);
       } catch (error) {
         console.error("Error loading data:", error);
-        alert("Error al cargar datos iniciales");
+        showModal('Error', 'Error al cargar datos iniciales', 'error');
       }
     };
     loadInitialData();
@@ -74,162 +101,232 @@ const AdminPanel = ({ onClose }) => {
     setFilteredRegistros(filtered);
   }, [searchTerm, registros]);
 
-const manejarAprobacion = async (extraHourId, accion) => {
-  try {
-    if (!extraHourId) throw new Error("ID de horas extra no proporcionado");
+  const manejarAprobacion = async (extraHourId, accion) => {
+    try {
+      if (!extraHourId) throw new Error("ID de horas extra no proporcionado");
 
-    const registroActual = registros.find(r => r.id === extraHourId);
-    if (!registroActual) throw new Error("Registro no encontrado");
+      const registroActual = registros.find(r => r.id === extraHourId);
+      if (!registroActual) throw new Error("Registro no encontrado");
 
-    const nuevoEstado = accion === 'aprobar' ? 'Aprobado' : 'Rechazado';
+      const nuevoEstado = accion === 'aprobar' ? 'Aprobado' : 'Rechazado';
 
-    const requestData = {
-      ...registroActual,
-      approvedById: 1,
-      status: nuevoEstado,
-      user: registroActual.user,
-      extraHourType: registroActual.extraHourType
-    };
+      const requestData = {
+        ...registroActual,
+        approvedById: 1,
+        status: nuevoEstado,
+        user: registroActual.user,
+        extraHourType: registroActual.extraHourType
+      };
 
-    const response = await api.put(`/api/extra-hours/${extraHourId}`, requestData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await api.put(`/api/extra-hours/${extraHourId}`, requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.data) throw new Error("Error: respuesta vacía del servidor");
+
+      const nuevosRegistros = registros.map(reg =>
+        reg.id === extraHourId ? { ...reg, status: nuevoEstado } : reg
+      );
+      setRegistros(nuevosRegistros);
+      calculateStats(nuevosRegistros, empleados);
+
+      showModal(
+        'Éxito', 
+        `Horas extras ${accion === 'aprobar' ? 'aprobadas' : 'rechazadas'} correctamente`, 
+        'success'
+      );
+    } catch (error) {
+      console.error('Error detallado:', error);
+
+      let errorMessage = `Error al ${accion === 'aprobar' ? 'aprobar' : 'rechazar'} las horas extras`;
+
+      if (error.response?.data?.includes('FK_ExtraHours_ExtraHourTypes_ExtraHourTypeId')) {
+        errorMessage = "Error: Problema con el tipo de hora extra. Contacte al administrador.";
+      } else if (error.response?.status === 500) {
+        errorMessage = "Error interno del servidor. Intente nuevamente o contacte al administrador.";
+      } else if (error.message) {
+        errorMessage += `: ${error.message}`;
       }
-    });
 
-    if (!response.data) throw new Error("Error: respuesta vacía del servidor");
-
-
-    const nuevosRegistros = registros.map(reg =>
-      reg.id === extraHourId ? { ...reg, status: nuevoEstado } : reg
-    );
-    setRegistros(nuevosRegistros);
-    calculateStats(nuevosRegistros, empleados);
-
-    alert(`Horas extras ${accion === 'aprobar' ? 'aprobadas' : 'rechazadas'} correctamente`);
-  } catch (error) {
-    console.error('Error detallado:', error);
-
-    let errorMessage = `Error al ${accion === 'aprobar' ? 'aprobar' : 'rechazar'} las horas extras`;
-
-    if (error.response?.data?.includes('FK_ExtraHours_ExtraHourTypes_ExtraHourTypeId')) {
-      errorMessage = "Error: Problema con el tipo de hora extra. Contacte al administrador.";
-    } else if (error.response?.status === 500) {
-      errorMessage = "Error interno del servidor. Intente nuevamente o contacte al administrador.";
-    } else if (error.message) {
-      errorMessage += `: ${error.message}`;
+      showModal('Error', errorMessage, 'error');
     }
-
-    alert(errorMessage);
-  }
-};
+  };
 
   const crearEmpleado = async () => {
-  
-  if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
-    alert("Por favor complete todos los campos");
-    return;
-  }
-
-  if (nuevoEmpleado.password.length < 8) {
-    alert("La contraseña debe tener al menos 8 caracteres");
-    return;
-  }
-
-  try {
-   
-    const userData = {
-      name: nuevoEmpleado.nombre,
-      email: nuevoEmpleado.email,
-      password: nuevoEmpleado.password,
-      roleId: 2, 
-      departmentId: 1, 
-      salary: 0 
-    };
-
-    const registerResponse = await api.post('/api/users/register', userData);
-    
-    if (!registerResponse.data || !registerResponse.data.id) {
-      throw new Error("No se recibieron datos válidos del servidor");
-    }
-
-    
-    const newEmployee = {
-      ...registerResponse.data,
-      roleId: 2, 
-      role: { name: 'Empleado' } 
-    };
-
-    setEmpleados([...empleados, newEmployee]);
-    setNuevoEmpleado({ nombre: "", email: "", password: "" });
-    setStats({ ...stats, totalEmpleados: empleados.length + 1 });
-
-    alert("Empleado creado exitosamente con rol de Empleado");
-    
-  } catch (error) {
-    console.error("Error al crear empleado:", error);
-    
-    let errorMessage = "Error al crear el empleado";
-    if (error.response) {
-      if (error.response.status === 400) {
-        errorMessage = "Datos inválidos: " + (error.response.data.message || "verifique la información");
-      } else if (error.response.status === 409) {
-        errorMessage = "El correo electrónico ya está registrado";
-      } else {
-        errorMessage = `Error del servidor (${error.response.status})`;
-      }
-    }
-    
-    alert(errorMessage);
-  }
-};
-
-const eliminarEmpleado = async (id) => {
-  try {
-    
-    const usuarioAEliminar = empleados.find(emp => emp.id === id);
-    
-    
-    if (usuarioAEliminar && usuarioAEliminar.email === "admin@admin.com") {
-      alert("No se puede eliminar al usuario administrador principal");
+    if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
+      showModal('Error', 'Por favor complete todos los campos', 'error');
       return;
     }
 
-    
-    if (!window.confirm(`¿Está seguro que desea eliminar al usuario ${usuarioAEliminar?.name || ''}?`)) {
+    if (nuevoEmpleado.password.length < 8) {
+      showModal('Error', 'La contraseña debe tener al menos 8 caracteres', 'error');
       return;
     }
 
-    await api.delete(`/api/users/${id}`);
+    try {
+      const userData = {
+        name: nuevoEmpleado.nombre,
+        email: nuevoEmpleado.email,
+        password: nuevoEmpleado.password,
+        roleId: 2, 
+        departmentId: 1, 
+        salary: 0 
+      };
 
-    setEmpleados(empleados.filter(emp => emp.id !== id));
-    setStats({ ...stats, totalEmpleados: empleados.length - 1 });
-
-    alert("Usuario eliminado correctamente");
-  } catch (error) {
-    console.error("Error al eliminar empleado:", error);
-    
-    let errorMessage = "Error al eliminar el empleado";
-    if (error.response) {
-      if (error.response.status === 404) {
-        errorMessage = "El usuario no fue encontrado";
-      } else if (error.response.status === 403) {
-        errorMessage = "No tiene permisos para realizar esta acción";
-      } else {
-        errorMessage = `Error del servidor (${error.response.status})`;
+      const registerResponse = await api.post('/api/users/register', userData);
+      
+      if (!registerResponse.data || !registerResponse.data.id) {
+        throw new Error("No se recibieron datos válidos del servidor");
       }
+
+      const newEmployee = {
+        ...registerResponse.data,
+        roleId: 2, 
+        role: { name: 'Empleado' } 
+      };
+
+      setEmpleados([...empleados, newEmployee]);
+      setNuevoEmpleado({ nombre: "", email: "", password: "" });
+      setStats({ ...stats, totalEmpleados: empleados.length + 1 });
+
+      showModal('Éxito', 'Empleado creado exitosamente con rol de Empleado', 'success');
+      
+    } catch (error) {
+      console.error("Error al crear empleado:", error);
+      
+      let errorMessage = "Error al crear el empleado";
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = "Datos inválidos: " + (error.response.data.message || "verifique la información");
+        } else if (error.response.status === 409) {
+          errorMessage = "El correo electrónico ya está registrado";
+        } else {
+          errorMessage = `Error del servidor (${error.response.status})`;
+        }
+      }
+      
+      showModal('Error', errorMessage, 'error');
     }
-    
-    alert(errorMessage);
-  }
-};
+  };
+
+  const eliminarEmpleado = async (id) => {
+    try {
+      const usuarioAEliminar = empleados.find(emp => emp.id === id);
+      
+      if (usuarioAEliminar && usuarioAEliminar.email === "admin@admin.com") {
+        showModal('Error', 'No se puede eliminar al usuario administrador principal', 'error');
+        return;
+      }
+
+      showModal(
+        'Confirmar eliminación', 
+        `¿Está seguro que desea eliminar al usuario ${usuarioAEliminar?.name || ''}?`,
+        'confirm',
+        async () => {
+          try {
+            await api.delete(`/api/users/${id}`);
+            setEmpleados(empleados.filter(emp => emp.id !== id));
+            setStats({ ...stats, totalEmpleados: empleados.length - 1 });
+            showModal('Éxito', 'Usuario eliminado correctamente', 'success');
+          } catch (error) {
+            console.error("Error al eliminar empleado:", error);
+            let errorMessage = "Error al eliminar el empleado";
+            if (error.response) {
+              if (error.response.status === 404) {
+                errorMessage = "El usuario no fue encontrado";
+              } else if (error.response.status === 403) {
+                errorMessage = "No tiene permisos para realizar esta acción";
+              } else {
+                errorMessage = `Error del servidor (${error.response.status})`;
+              }
+            }
+            showModal('Error', errorMessage, 'error');
+          }
+        }
+      );
+    } catch (error) {
+      console.error("Error en el proceso de eliminación:", error);
+      showModal('Error', 'Ocurrió un error inesperado', 'error');
+    }
+  };
+
+  // Iconos para el modal según el tipo
+  const ModalIcon = () => {
+    switch(modalConfig.type) {
+      case 'success':
+        return <Check className="w-10 h-10 text-green-500" />;
+      case 'error':
+        return <AlertTriangle className="w-10 h-10 text-red-500" />;
+      case 'confirm':
+        return <Info className="w-10 h-10 text-blue-500" />;
+      default:
+        return <Info className="w-10 h-10 text-blue-500" />;
+    }
+  };
+
+  // Color del botón principal según el tipo de modal
+  const modalButtonClass = () => {
+    switch(modalConfig.type) {
+      case 'success':
+        return "bg-green-600 hover:bg-green-700";
+      case 'error':
+        return "bg-red-600 hover:bg-red-700";
+      case 'confirm':
+        return "bg-blue-600 hover:bg-blue-700";
+      default:
+        return "bg-blue-600 hover:bg-blue-700";
+    }
+  };
 
   const mainBgColor = isDark ? "bg-gray-900" : "bg-gray-100";
   const panelBgColor = isDark ? "bg-gray-800/80" : "bg-white";
 
   return (
     <div className="relative">
+      {/* Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div 
+            className={`rounded-lg shadow-xl w-full max-w-md transform transition-all ${isDark ? 'bg-gray-800' : 'bg-white'} border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex flex-col items-center space-y-4">
+                <ModalIcon />
+                <h3 className="text-xl font-bold text-center">{modalConfig.title}</h3>
+                <p className="text-center whitespace-pre-line">{modalConfig.message}</p>
+              </div>
+              
+              <div className="mt-6 flex justify-center space-x-3">
+                {modalConfig.type === 'confirm' && (
+                  <button
+                    onClick={() => {
+                      if (modalConfig.onCancel) modalConfig.onCancel();
+                      closeModal();
+                    }}
+                    className={`px-4 py-2 rounded ${isDark ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} transition-colors`}
+                  >
+                    Cancelar
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    if (modalConfig.onConfirm) modalConfig.onConfirm();
+                    closeModal();
+                  }}
+                  className={`px-4 py-2 rounded text-white ${modalButtonClass()} transition-colors`}
+                >
+                  {modalConfig.type === 'confirm' ? 'Confirmar' : 'Aceptar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={`min-h-screen w-full ${mainBgColor} text-${isDark ? "white" : "gray-800"} transition-colors duration-200`}>
         <div className="container mx-auto p-6 space-y-6">
           {/* Resumen Administrativo */}
@@ -318,9 +415,8 @@ const eliminarEmpleado = async (id) => {
                   </thead>
                   <tbody>
                     {filteredRegistros.map((registro) => (
-                      <tr key={registro.id} className={`border-t transition-colors duration-200 ${
-                        isDark ? "border-gray-700" : "border-gray-200"
-                      }`}>
+                      <tr key={registro.id} className={`border-t transition-colors duration-200 ${isDark ? "border-gray-700" : "border-gray-200"
+                        }`}>
                         <td className="p-3">{registro.user?.name}</td>
                         <td className="p-3">{new Date(registro.date).toLocaleDateString()}</td>
                         <td className="p-3">{registro.reason}</td>
@@ -379,7 +475,7 @@ const eliminarEmpleado = async (id) => {
               <Users className="text-purple-500" /> Gestión de Empleados
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"> {/* Cambiado de 5 a 4 columnas */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <input
                 type="text"
                 placeholder="Nombre completo"
