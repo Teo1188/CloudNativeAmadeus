@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Users, UserPlus, UserCheck, UserX, User } from 'lucide-react';
+import { Clock, Users, UserPlus, UserCheck, UserX, User, Check, AlertTriangle, Info } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { FaSearch, FaTimes } from "react-icons/fa";
 import api from '../api/axiosInstance';
@@ -22,7 +22,7 @@ const AdminPanel = ({ onClose }) => {
   const [modalConfig, setModalConfig] = useState({
     title: '',
     message: '',
-    type: 'info', // 'info', 'success', 'error', 'confirm'
+    type: 'info',
     onConfirm: null,
     onCancel: null
   });
@@ -101,7 +101,8 @@ const AdminPanel = ({ onClose }) => {
     setFilteredRegistros(filtered);
   }, [searchTerm, registros]);
 
-  const manejarAprobacion = async (extraHourId, accion) => {
+  const manejarAprobacion = async (extraHourId, accion, e) => {
+    e.preventDefault(); // Prevenir comportamiento por defecto
     try {
       if (!extraHourId) throw new Error("ID de horas extra no proporcionado");
 
@@ -155,7 +156,8 @@ const AdminPanel = ({ onClose }) => {
     }
   };
 
-  const crearEmpleado = async () => {
+  const crearEmpleado = async (e) => {
+    e.preventDefault(); // Prevenir comportamiento por defecto
     if (!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password) {
       showModal('Error', 'Por favor complete todos los campos', 'error');
       return;
@@ -212,7 +214,8 @@ const AdminPanel = ({ onClose }) => {
     }
   };
 
-  const eliminarEmpleado = async (id) => {
+  const eliminarEmpleado = async (id, e) => {
+    e.preventDefault(); // Prevenir comportamiento por defecto
     try {
       const usuarioAEliminar = empleados.find(emp => emp.id === id);
       
@@ -303,7 +306,8 @@ const AdminPanel = ({ onClose }) => {
               <div className="mt-6 flex justify-center space-x-3">
                 {modalConfig.type === 'confirm' && (
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       if (modalConfig.onCancel) modalConfig.onCancel();
                       closeModal();
                     }}
@@ -313,7 +317,8 @@ const AdminPanel = ({ onClose }) => {
                   </button>
                 )}
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (modalConfig.onConfirm) modalConfig.onConfirm();
                     closeModal();
                   }}
@@ -437,7 +442,7 @@ const AdminPanel = ({ onClose }) => {
                           {registro.status === "Pendiente" && (
                             <>
                               <button 
-                                onClick={() => manejarAprobacion(registro.id, 'aprobar')}
+                                onClick={(e) => manejarAprobacion(registro.id, 'aprobar', e)}
                                 className={`px-3 py-1 rounded text-sm ${
                                   isDark ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700"
                                 } text-white`}
@@ -445,7 +450,7 @@ const AdminPanel = ({ onClose }) => {
                                 Aprobar
                               </button>
                               <button 
-                                onClick={() => manejarAprobacion(registro.id, 'denegar')}
+                                onClick={(e) => manejarAprobacion(registro.id, 'denegar', e)}
                                 className={`px-3 py-1 rounded text-sm ${
                                   isDark ? "bg-red-700 hover:bg-red-800" : "bg-red-600 hover:bg-red-700"
                                 } text-white`}
@@ -475,44 +480,46 @@ const AdminPanel = ({ onClose }) => {
               <Users className="text-purple-500" /> Gestión de Empleados
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <input
-                type="text"
-                placeholder="Nombre completo"
-                className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
-                  }`}
-                value={nuevoEmpleado.nombre}
-                onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, nombre: e.target.value })}
-                required
-              />
-              <input
-                type="email"
-                placeholder="Correo electrónico"
-                className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
-                  }`}
-                value={nuevoEmpleado.email}
-                onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, email: e.target.value })}
-                required
-              />
-              <input
-                type="password"
-                placeholder="Contraseña (mín. 8 caracteres)"
-                className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
-                  }`}
-                value={nuevoEmpleado.password}
-                onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, password: e.target.value })}
-                minLength="8"
-                required
-              />
-              <button
-                className={`text-white p-2 rounded transition-colors duration-200 ${isDark ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700"
-                  }`}
-                onClick={crearEmpleado}
-                disabled={!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password}
-              >
-                Agregar Empleado
-              </button>
-            </div>
+            <form onSubmit={crearEmpleado}>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <input
+                  type="text"
+                  placeholder="Nombre completo"
+                  className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
+                    }`}
+                  value={nuevoEmpleado.nombre}
+                  onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, nombre: e.target.value })}
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Correo electrónico"
+                  className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
+                    }`}
+                  value={nuevoEmpleado.email}
+                  onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, email: e.target.value })}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="Contraseña (mín. 8 caracteres)"
+                  className={`p-2 border rounded transition-colors duration-200 ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300"
+                    }`}
+                  value={nuevoEmpleado.password}
+                  onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, password: e.target.value })}
+                  minLength="8"
+                  required
+                />
+                <button
+                  type="submit"
+                  className={`text-white p-2 rounded transition-colors duration-200 ${isDark ? "bg-blue-700 hover:bg-blue-800" : "bg-blue-600 hover:bg-blue-700"
+                    }`}
+                  disabled={!nuevoEmpleado.nombre || !nuevoEmpleado.email || !nuevoEmpleado.password}
+                >
+                  Agregar Empleado
+                </button>
+              </div>
+            </form>
 
             {/* Mensaje explicativo */}
             <div className={`mb-4 p-3 rounded ${isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700"
@@ -552,7 +559,7 @@ const AdminPanel = ({ onClose }) => {
                       </td>
                       <td className="p-3">
                         <button
-                          onClick={() => eliminarEmpleado(empleado.id)}
+                          onClick={(e) => eliminarEmpleado(empleado.id, e)}
                           className={`px-3 py-1 rounded text-sm ${isDark ? "bg-red-700 hover:bg-red-800" : "bg-red-600 hover:bg-red-700"
                             } text-white flex items-center gap-1`}
                           disabled={empleado.email === "admin@admin.com"}
