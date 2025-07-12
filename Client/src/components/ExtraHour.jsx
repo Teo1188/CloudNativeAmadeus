@@ -387,11 +387,14 @@ const ExtraHoursPanel = () => {
   };
 
   return (
-    <div className={`min-h-screen w-full ${mainBgColor} text-${isDark ? "white" : "gray-800"} transition-colors duration-200`}>
+    <div className={`min-h-screen w-full ${mainBgColor} text-${isDark ? "white" : "gray-800"} transition-colors duration-200 relative`}>
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className={`rounded-lg shadow-xl w-full max-w-md ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div 
+            className={`rounded-lg shadow-xl w-full max-w-md transform transition-all ${isDark ? 'bg-gray-800' : 'bg-white'} border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="p-6">
               <div className="flex flex-col items-center space-y-4">
                 <ModalIcon />
